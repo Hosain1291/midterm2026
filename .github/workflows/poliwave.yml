@@ -1,0 +1,56 @@
+# Poliwave Results API → live 브랜치의 live.json
+# 저장소 Settings → Secrets and variables → Actions 에 POLIWAVE_KEY 를 넣으면 작동합니다.
+name: Poliwave 개표 피드
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poliwave
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      POLIWAVE_KEY: ${{ secrets.POLIWAVE_KEY }}
+      POLIWAVE_SLUG: ${{ vars.POLIWAVE_SLUG }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 피드 받아서 live 브랜치에 올리기
+        run: |
+          if [ -z "$POLIWAVE_KEY" ]; then echo "POLIWAVE_KEY Secret 없음 — 건너뜀"; exit 0; fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          REPO_URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          rm -rf out && mkdir out && cd out && git init -q -b live && git remote add origin "$REPO_URL" && cd ..
+
+          # 개표 기간(한국시간 11/4 07:00 ~ 11/7 09:00)에는 55분 동안 30초마다, 그 외에는 한 번만
+          NOW=$(date -u +%s)
+          START=$(date -u -d '2026-11-03T22:00:00Z' +%s)
+          END=$(date -u -d '2026-11-07T00:00:00Z' +%s)
+          if [ "$NOW" -ge "$START" ] && [ "$NOW" -le "$END" ]; then LOOP=3300; else LOOP=0; fi
+          STOP=$((SECONDS + LOOP))
+          LAST=""
+          while :; do
+            if node scripts/poliwave.mjs out; then
+              HASH=$(sha1sum out/live.json | cut -c1-40)
+              if [ "$HASH" != "$LAST" ]; then
+                (cd out && git add -A && git commit -q -m "live $(date -u +%H:%M:%S)" && git push -q -f origin live) && LAST="$HASH"
+                (cd out && git reset -q --soft HEAD~1 2>/dev/null || git update-ref -d HEAD)
+              fi
+            fi
+            [ "$SECONDS" -ge "$STOP" ] && break
+            sleep 30
+          done

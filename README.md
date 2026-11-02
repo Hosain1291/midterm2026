@@ -1,26 +1,23 @@
-# 2026 미국 중간선거 개표 상황판
+# 2026 미국 중간선거 개표 특보
 
 2026년 11월 3일 미국 중간선거(상원·하원·주지사) 개표 현황을 한국어로 보여주는 사이트입니다.
+방송 개표 그래픽 느낌의 디자인, 라이트/다크 테마, 하원 435석 육각형 카토그램.
 
-## 데이터
+## 데이터 (자동)
 
-- **실시간 개표 수치·당선 판정:** [civicAPI](https://civicapi.org)의 공개 JSON 피드 (무료, 키 불필요, 출처 표기 필수)
-  - 상원 35곳: 전국 집계 피드 `race/87528`
-  - 하원 435석: 전국 집계 피드 `race/87524`
-  - 주지사 36곳: 주별 피드 (`data/races.json`의 `civicId`)
-- 페이지가 브라우저에서 1분마다 피드를 직접 받아옵니다. 따로 서버나 입력 작업이 필요 없습니다.
-- 개표 전에는 civicAPI가 시험용 데이터(`test_data: true`)를 내보내는데, 이때는 "개표 시작 전"으로 표시하고 수치를 무시합니다.
+1. **Poliwave Results API** (1순위) — 키가 있어야 하고 키는 브라우저에 노출하면 안 되므로,
+   GitHub Actions(`.github/workflows/poliwave.yml`)가 키로 받아서 `live` 브랜치의 `live.json`에 올리고, 사이트는 그 파일을 읽습니다.
+   - 키 받기: https://www.poliwave.com/about/api 의 안내대로 Poliwave에 이메일로 신청
+   - 키 넣기: 저장소 Settings → Secrets and variables → Actions → New repository secret → 이름 `POLIWAVE_KEY`
+   - 개표 기간(한국시간 11/4 07시 ~ 11/7 09시)에는 30초마다, 그 외에는 15분마다 받습니다.
+2. **civicAPI** (자동 대체) — Poliwave 데이터가 없거나 15분 넘게 멈추면 사이트가 civicAPI 공개 피드를 직접 받습니다.
 
 ## 파일
 
 | 파일 | 내용 |
 |---|---|
-| `index.html`, `style.css`, `app.js` | 사이트 본체 |
-| `data/races.json` | 후보 한국어 이름·영문 이름·정당·현직 여부, 피드 주소, 공지 |
-| `data/states.json` | 미국 지도 모양 (us-atlas) |
-
-### 손으로 고칠 일이 생기면 (`data/races.json`)
-
-- `"notice": ""` 에 문장을 넣으면 사이트 맨 위에 공지로 뜹니다.
-- 어떤 경합의 당선자를 직접 정하고 싶으면 그 경합의 `"winner": null`을 후보 순서 번호(0부터)로 바꾸면 피드보다 우선합니다.
-- 후보 영문 이름(`en`)은 피드의 후보와 짝을 맞추는 데 쓰입니다.
+| `index.html`, `style.css`, `app.js` | 사이트 |
+| `data/races.json` | 후보 한국어·영문 이름, 정당, 현직 여부, 공지(`notice`), 수동 당선 지정(`winner`) |
+| `data/states.json` | 미국 지도 (us-atlas) |
+| `data/house-grid.json` | 하원 육각형 카토그램 배치 |
+| `scripts/poliwave.mjs` | Poliwave → live.json 변환 (Actions에서 실행) |
