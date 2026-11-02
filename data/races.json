@@ -1,0 +1,1584 @@
+{
+ "notice": "",
+ "source": {
+  "name": "civicAPI",
+  "url": "https://civicapi.org",
+  "base": "https://civicapi.org/api/v2",
+  "senateAggregate": 87528,
+  "houseAggregate": 87524,
+  "electionDate": "2026-11-03"
+ },
+ "senate": {
+  "holdover": {
+   "D": 34,
+   "R": 31,
+   "I": 0
+  },
+  "races": [
+   {
+    "state": "AL",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "배리 무어",
+      "en": "Barry Moore",
+      "party": "R"
+     },
+     {
+      "name": "에버렛 웨스",
+      "en": "Everett Wess",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "AK",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "댄 설리번",
+      "en": "Dan Sullivan",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "메리 펠톨라",
+      "en": "Mary Peltola",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "AR",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "톰 코튼",
+      "en": "Tom Cotton",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "핼리 쇼프너",
+      "en": "Hallie Shoffner",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "CO",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "존 히컨루퍼",
+      "en": "John Hickenlooper",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "마크 베이슬리",
+      "en": "Mark Baisley",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "DE",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "크리스 쿤스",
+      "en": "Chris Coons",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "마이크 카츠",
+      "en": "Mike Katz",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "FL",
+    "label": "보궐",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "애슐리 무디",
+      "en": "Ashley Moody",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "앤지 닉슨",
+      "en": "Angie Nixon",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "GA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "존 오소프",
+      "en": "Jon Ossoff",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "마이크 콜린스",
+      "en": "Mike Collins",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "ID",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "짐 리시",
+      "en": "Jim Risch",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "토드 아킬레스",
+      "en": "Todd Achilles",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "IL",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "줄리애나 스트래턴",
+      "en": "Juliana Stratton",
+      "party": "D"
+     },
+     {
+      "name": "돈 트레이시",
+      "en": "Don Tracy",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "IA",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "애슐리 힌슨",
+      "en": "Ashley Hinson",
+      "party": "R"
+     },
+     {
+      "name": "조시 투렉",
+      "en": "Josh Turek",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "KS",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "로저 마셜",
+      "en": "Roger Marshall",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "애덤 해밀턴",
+      "en": "Adam Hamilton",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "KY",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "앤디 바",
+      "en": "Andy Barr",
+      "party": "R"
+     },
+     {
+      "name": "찰스 부커",
+      "en": "Charles Booker",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "LA",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "줄리아 레틀로",
+      "en": "Julia Letlow",
+      "party": "R"
+     },
+     {
+      "name": "제이미 데이비스",
+      "en": "Jamie Davis",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "ME",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "수전 콜린스",
+      "en": "Susan Collins",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "트로이 잭슨",
+      "en": "Troy Jackson",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "MA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "에드 마키",
+      "en": "Ed Markey",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "존 디턴",
+      "en": "John Deaton",
+      "party": "R"
+     },
+     {
+      "name": "시바 아야두라이",
+      "en": "Shiva Ayyadurai",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "MI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "압둘 엘사예드",
+      "en": "Abdul El-Sayed",
+      "party": "D"
+     },
+     {
+      "name": "마이크 로저스",
+      "en": "Mike Rogers",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "MN",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "페기 플래너건",
+      "en": "Peggy Flanagan",
+      "party": "D"
+     },
+     {
+      "name": "미셸 타포야",
+      "en": "Michele Tafoya",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "MS",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "신디 하이드스미스",
+      "en": "Cindy Hyde-Smith",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "스콧 콜럼",
+      "en": "Scott Colom",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "MT",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "커트 알미",
+      "en": "Kurt Alme",
+      "party": "R"
+     },
+     {
+      "name": "알라니 뱅크헤드",
+      "en": "Alani Bankhead",
+      "party": "D"
+     },
+     {
+      "name": "세스 보드너",
+      "en": "Seth Bodnar",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "NE",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "피트 리케츠",
+      "en": "Pete Ricketts",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "댄 오즈번",
+      "en": "Dan Osborn",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "NH",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "크리스 패파스",
+      "en": "Chris Pappas",
+      "party": "D"
+     },
+     {
+      "name": "존 E. 수누누",
+      "en": "John E. Sununu",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "NJ",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "코리 부커",
+      "en": "Cory Booker",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "저스틴 머피",
+      "en": "Justin Murphy",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "NM",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "벤 레이 루한",
+      "en": "Ben Ray Lujan",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "래리 마커",
+      "en": "Larry Marker",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "NC",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "로이 쿠퍼",
+      "en": "Roy Cooper",
+      "party": "D"
+     },
+     {
+      "name": "마이클 와틀리",
+      "en": "Michael Whatley",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "OH",
+    "label": "보궐",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "존 허스테드",
+      "en": "Jon Husted",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "셰러드 브라운",
+      "en": "Sherrod Brown",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "OK",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "케빈 헌",
+      "en": "Kevin Hern",
+      "party": "R"
+     },
+     {
+      "name": "재스민 토머스",
+      "en": "Jasmine Thomas",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "OR",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "제프 머클리",
+      "en": "Jeff Merkley",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "데이비드 브록 스미스",
+      "en": "David Brock Smith",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "RI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "잭 리드",
+      "en": "Jack Reed",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "레이먼드 매케이",
+      "en": "Raymond McKay",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "SC",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "달린 그레이엄",
+      "en": "Darline Graham",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "애니 앤드루스",
+      "en": "Annie Andrews",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "SD",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "마이크 라운즈",
+      "en": "Mike Rounds",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "줄리언 보디언",
+      "en": "Julian Beaudion",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "TN",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "빌 해거티",
+      "en": "Bill Hagerty",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "마키타 브래드쇼",
+      "en": "Marquita Bradshaw",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "TX",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "켄 팩스턴",
+      "en": "Ken Paxton",
+      "party": "R"
+     },
+     {
+      "name": "제임스 탈라리코",
+      "en": "James Talarico",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "VA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "마크 워너",
+      "en": "Mark Warner",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "버트 미즈사와",
+      "en": "Bert Mizusawa",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "WV",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "셸리 무어 캐피토",
+      "en": "Shelley Moore Capito",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "레이철 페티 앤더슨",
+      "en": "Rachel Fetty Anderson",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "WY",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "해리엇 헤이그먼",
+      "en": "Harriet Hageman",
+      "party": "R"
+     },
+     {
+      "name": "제임스 버드",
+      "en": "James Byrd",
+      "party": "D"
+     }
+    ]
+   }
+  ]
+ },
+ "governor": {
+  "holdover": {
+   "D": 6,
+   "R": 8,
+   "I": 0
+  },
+  "races": [
+   {
+    "state": "AL",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 86908,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "토미 튜버빌",
+      "en": "Tommy Tuberville",
+      "party": "R"
+     },
+     {
+      "name": "더그 존스",
+      "en": "Doug Jones",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "AK",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 148898,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "데이브 브론슨",
+      "en": "Dave Bronson",
+      "party": "R"
+     },
+     {
+      "name": "조너선 크라이스톰킨스",
+      "en": "Jonathan Kreiss-Tomkins",
+      "party": "D"
+     },
+     {
+      "name": "트레그 테일러",
+      "en": "Treg Taylor",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "AZ",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": true,
+    "civicId": null,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "케이티 홉스",
+      "en": "Katie Hobbs",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "앤디 빅스",
+      "en": "Andy Biggs",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "AR",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 86938,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "세라 허커비 샌더스",
+      "en": "Sarah Huckabee Sanders",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "프레드 러브",
+      "en": "Fred Love",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "CA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": 86952,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "하비에르 베세라",
+      "en": "Xavier Becerra",
+      "party": "D"
+     },
+     {
+      "name": "스티브 힐턴",
+      "en": "Steve Hilton",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "CO",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": 87018,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "필 와이저",
+      "en": "Phil Weiser",
+      "party": "D"
+     },
+     {
+      "name": "빅터 마크스",
+      "en": "Victor Marx",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "CT",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87026,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "네드 러몬트",
+      "en": "Ned Lamont",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "라이언 파지오",
+      "en": "Ryan Fazio",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "FL",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87069,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "바이런 도널즈",
+      "en": "Byron Donalds",
+      "party": "R"
+     },
+     {
+      "name": "데이비드 졸리",
+      "en": "David Jolly",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "GA",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": true,
+    "civicId": 87088,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "릭 잭슨",
+      "en": "Rick Jackson",
+      "party": "R"
+     },
+     {
+      "name": "키샤 랜스 보텀스",
+      "en": "Keisha Lance Bottoms",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "HI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87100,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "조시 그린",
+      "en": "Josh Green",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "개리 코더리",
+      "en": "Gary Cordery",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "ID",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 87106,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "브래드 리틀",
+      "en": "Brad Little",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "테리 피킨스",
+      "en": "Terri Pickens",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "IL",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87130,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "JB 프리츠커",
+      "en": "JB Pritzker",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "대런 베일리",
+      "en": "Darren Bailey",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "IA",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": true,
+    "civicId": 87152,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "잭 란",
+      "en": "Zach Lahn",
+      "party": "R"
+     },
+     {
+      "name": "롭 샌드",
+      "en": "Rob Sand",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "KS",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": 87163,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "타이 매스터슨",
+      "en": "Ty Masterson",
+      "party": "R"
+     },
+     {
+      "name": "신디 홀셔",
+      "en": "Cindy Holscher",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "ME",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": 87189,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "해나 핑그리",
+      "en": "Hannah Pingree",
+      "party": "D"
+     },
+     {
+      "name": "바비 찰스",
+      "en": "Bobby Charles",
+      "party": "R"
+     },
+     {
+      "name": "릭 베넷",
+      "en": "Rick Bennett",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "MD",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87198,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "웨스 무어",
+      "en": "Wes Moore",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "댄 콕스",
+      "en": "Dan Cox",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "MA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87276,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "모라 힐리",
+      "en": "Maura Healey",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "마이클 미노그",
+      "en": "Michael Minogue",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "MI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": 87215,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "조슬린 벤슨",
+      "en": "Jocelyn Benson",
+      "party": "D"
+     },
+     {
+      "name": "존 제임스",
+      "en": "John James",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "MN",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": 87230,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "에이미 클로버샤",
+      "en": "Amy Klobuchar",
+      "party": "D"
+     },
+     {
+      "name": "리사 디머스",
+      "en": "Lisa Demuth",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "NE",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 87255,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "짐 필런",
+      "en": "Jim Pillen",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "린 월즈",
+      "en": "Lynne Walz",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "NV",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": 87260,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "조 롬바도",
+      "en": "Joe Lombardo",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "에런 포드",
+      "en": "Aaron Ford",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "NH",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": true,
+    "civicId": 87284,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "켈리 에이욧",
+      "en": "Kelly Ayotte",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "신디 워밍턴",
+      "en": "Cinde Warmington",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "NM",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": 87289,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "뎁 할랜드",
+      "en": "Deb Haaland",
+      "party": "D"
+     },
+     {
+      "name": "그레그 헐",
+      "en": "Gregg Hull",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "NY",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87329,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "캐시 호컬",
+      "en": "Kathy Hochul",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "브루스 블레이크먼",
+      "en": "Bruce Blakeman",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "OH",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87365,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "비벡 라마스와미",
+      "en": "Vivek Ramaswamy",
+      "party": "R"
+     },
+     {
+      "name": "에이미 액턴",
+      "en": "Amy Acton",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "OK",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87582,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "마이크 마제이",
+      "en": "Mike Mazzei",
+      "party": "R"
+     },
+     {
+      "name": "신디 먼슨",
+      "en": "Cyndi Munson",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "OR",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87375,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "티나 코텍",
+      "en": "Tina Kotek",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "크리스틴 드레이전",
+      "en": "Christine Drazan",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "PA",
+    "label": "",
+    "incumbentParty": "D",
+    "open": false,
+    "key": false,
+    "civicId": 87393,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "조시 셔피로",
+      "en": "Josh Shapiro",
+      "party": "D",
+      "inc": true
+     },
+     {
+      "name": "스테이시 개리티",
+      "en": "Stacy Garrity",
+      "party": "R"
+     }
+    ]
+   },
+   {
+    "state": "RI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": false,
+    "civicId": 87397,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "헬레나 포크스",
+      "en": "Helena Foulkes",
+      "party": "D"
+     },
+     {
+      "name": "에런 거키언",
+      "en": "Aaron Guckian",
+      "party": "R"
+     },
+     {
+      "name": "켄 블록",
+      "en": "Ken Block",
+      "party": "I"
+     }
+    ]
+   },
+   {
+    "state": "SC",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87410,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "앨런 윌슨",
+      "en": "Alan Wilson",
+      "party": "R"
+     },
+     {
+      "name": "저메인 존슨",
+      "en": "Jermaine Johnson",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "SD",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 87447,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "래리 로든",
+      "en": "Larry Rhoden",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "댄 알러스",
+      "en": "Dan Ahlers",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "TN",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87476,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "마샤 블랙번",
+      "en": "Marsha Blackburn",
+      "party": "R"
+     },
+     {
+      "name": "제리 그린",
+      "en": "Jerri Green",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "TX",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 55857,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "그레그 애벗",
+      "en": "Greg Abbott",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "지나 이노호사",
+      "en": "Gina Hinojosa",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "VT",
+    "label": "",
+    "incumbentParty": "R",
+    "open": false,
+    "key": false,
+    "civicId": 87503,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "필 스콧",
+      "en": "Phil Scott",
+      "party": "R",
+      "inc": true
+     },
+     {
+      "name": "어맨다 저누",
+      "en": "Amanda Janoo",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "WI",
+    "label": "",
+    "incumbentParty": "D",
+    "open": true,
+    "key": true,
+    "civicId": 87491,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "톰 티퍼니",
+      "en": "Tom Tiffany",
+      "party": "R"
+     },
+     {
+      "name": "데이비드 크롤리",
+      "en": "David Crowley",
+      "party": "D"
+     }
+    ]
+   },
+   {
+    "state": "WY",
+    "label": "",
+    "incumbentParty": "R",
+    "open": true,
+    "key": false,
+    "civicId": 87497,
+    "winner": null,
+    "candidates": [
+     {
+      "name": "에릭 발로",
+      "en": "Eric Barlow",
+      "party": "R"
+     },
+     {
+      "name": "켄 캐스너",
+      "en": "Ken Casner",
+      "party": "D"
+     }
+    ]
+   }
+  ]
+ }
+}

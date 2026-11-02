@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 미국 중간선거 개표 현황</title>
+<meta name="description" content="2026년 미국 중간선거 상원·하원·주지사 개표 현황을 한국어로">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap masthead-in">
+    <div class="brand">
+      <span class="brand-kicker">2026 미국 중간선거</span>
+      <h1>개표 상황판</h1>
+      <p class="brand-sub">현지 11월 3일 투표 · 한국시간 11월 4일 오전부터 개표</p>
+    </div>
+    <div class="live" id="live">
+      <span class="live-dot"></span>
+      <span id="liveText">불러오는 중…</span>
+    </div>
+  </div>
+  <nav class="wrap tabs" id="tabs">
+    <a href="#senate" data-view="senate">상원</a>
+    <a href="#house" data-view="house">하원</a>
+    <a href="#governor" data-view="governor">주지사</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="summary" id="summary"></section>
+
+  <section class="mapcard">
+    <div class="map-head">
+      <h2 id="mapTitle">지도</h2>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="map-box">
+      <svg id="map" viewBox="0 0 975 610" role="img" aria-label="미국 지도"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+  </section>
+
+  <section class="races">
+    <div class="races-head">
+      <h2 id="listTitle">주별 결과</h2>
+      <div class="filters" id="filters">
+        <button data-f="all" class="on">전체</button>
+        <button data-f="key">주목 선거</button>
+        <button data-f="counting">개표 중</button>
+        <button data-f="called">당선 확정</button>
+      </div>
+      <input id="search" type="search" placeholder="주 이름 검색 (예: 조지아)">
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>개표 수치·당선 판정: <a href="https://civicapi.org" target="_blank" rel="noopener">civicAPI (civicapi.org)</a> 공개 JSON 피드를 1분마다 받아 표시합니다. 수치는 비공식 개표 중간 집계이며, 공식 결과는 각 주 선거관리 당국의 확정 발표를 따릅니다.</p>
+  <p>상원은 이번에 선거가 없는 65석(민주 계열 34 · 공화 31)을 포함해 계산하며, 50 대 50 동수일 때는 부통령(공화)이 캐스팅보트를 가집니다.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
