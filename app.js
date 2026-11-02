@@ -426,7 +426,29 @@
         <span><i style="background:var(--map-wait)"></i>미정</span>
         ${t.base ? `<span>선거 없는 ${view === 'senate' ? '의석' : '주'}: 민주 ${t.base.D} · 공화 ${t.base.R}</span>` : ''}
       </div>
+      ${partyTable(t)}
       <p class="headline"><span class="tag">${view === 'senate' ? '상원' : view === 'house' ? '하원' : '주지사'}</span>${headline}</p>`;
+  }
+
+  // 정당별 결과표: 의석 · 변동 · 득표율
+  function partyTable(t) {
+    const votes = { D: 0, R: 0, I: 0 };
+    if (view === 'house') {
+      for (const L of Object.values(live.test ? {} : live.house)) for (const c of L.cands || []) votes[group(c.party)] += c.votes || 0;
+    } else {
+      for (const r of races()) for (const c of r.candidates) votes[group(c.party)] += c.votes || 0;
+    }
+    const tot = votes.D + votes.R + votes.I;
+    const rows = [['D', '민주당'], ['R', '공화당'], ['I', '무소속·기타']].map(([p, name]) => {
+      const seats = t.won[p], lead = t.lead[p];
+      const g = t.gain ? t.gain[p] : null;
+      const share = tot ? votes[p] / tot * 100 : 0;
+      return `<tr><td><i class="pdot" style="background:${P(p).c}"></i>${name}</td>
+        <td class="n">${seats}${lead ? `<small>+${lead}</small>` : ''}</td>
+        <td class="n ${g > 0 ? 'up' : g < 0 ? 'down' : ''}">${g === null ? '–' : g > 0 ? '+' + g : g}</td>
+        <td class="vs"><span class="vbar"><span style="width:${share}%;background:${P(p).c}"></span></span><b>${tot ? share.toFixed(1) + '%' : '–'}</b></td></tr>`;
+    }).join('');
+    return `<table class="ptable"><thead><tr><th>정당</th><th class="n">${view === 'governor' ? '당선' : '의석'}</th><th class="n">변동</th><th>득표율${view === 'house' ? ' (전체 선거구 합)' : ' (이번 선거 합)'}</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   function renderLegend() {
@@ -460,7 +482,7 @@
   }
   const OFFICE = { senate: '상원', governor: '주지사', house: '하원' };
   function callText(c) {
-    if (c.v === 'house') return { where: `${distName(c.id)} 하원`, who: esc(c.s.w.en), party: group(c.s.w.party), flip: false };
+    if (c.v === 'house') return { where: `${distName(c.id)} 하원`, who: esc(c.s.w.en), party: group(c.s.w.party), flip: false, house: true };
     const cand = c.r.candidates[c.s.idx];
     return { where: `${geo.states[c.r.state].ko} ${OFFICE[c.v]}`, who: esc(cand.name), party: group(cand.party), flip: group(cand.party) !== c.r.incumbentParty, from: c.r.incumbentParty };
   }
@@ -484,7 +506,7 @@
       const x = callText(c);
       const go = c.v === 'house' ? c.id.split('-')[0] : c.r.state;
       return `<div class="mrow" data-go="${go}"><span class="bar6" style="background:${P(x.party).c}"></span>
-        <div><div class="t">${x.where}</div><div class="s">${x.who} (${P(x.party).ko}) 당선${x.flip ? ` · <b style="color:var(--accent)">${P(x.from).ko}→${P(x.party).ko} 교체</b>` : ''}</div></div>
+        <div><div class="t">${x.where} <span class="badge" style="background:${P(x.party).c}">${P(x.party).ko} ${x.house ? '당선' : x.flip ? '탈환' : '유지'}</span></div><div class="s">${x.who} 당선${x.flip ? ` · ${P(x.from).ko}에서 넘어옴` : ''}</div></div>
         <div class="m"><small>${new Date(c.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false })}</small></div></div>`;
     }).join('') || '<div class="empty">아직 당선이 확정된 곳이 없습니다</div>';
   }
@@ -633,8 +655,8 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611020959').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611020959').then(r => r.json()),
+    fetch('data/states.json?v=202611021006').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611021006').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;

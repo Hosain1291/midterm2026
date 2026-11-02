@@ -214,3 +214,19 @@ h2::before{content:"";width:4px;height:16px;background:var(--accent);display:inl
   .filters button{flex:1;padding:6px 4px}
 }
 @media (max-width:460px){.status{display:none}}
+
+/* 정당별 결과표 */
+.ptable{width:calc(100% - 40px);margin:14px 20px 0;border-collapse:collapse;font-size:14px}
+.ptable th{font-size:11px;color:var(--ink3);font-weight:700;text-align:left;padding:4px 8px;border-bottom:2px solid var(--ink)}
+.ptable td{padding:8px;border-bottom:1px solid var(--line);font-weight:700}
+.ptable .n{text-align:right;font-family:var(--num);font-size:20px;width:70px}
+.ptable th.n{font-family:inherit;font-size:11px}
+.ptable .n small{font-size:12px;color:var(--ink3);margin-left:4px}
+.ptable .up{color:#17a35b}.ptable .down{color:var(--accent)}
+.ptable .pdot{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+.ptable .vs{display:flex;align-items:center;gap:10px}
+.ptable .vbar{flex:1;height:10px;background:var(--track);border-radius:2px;overflow:hidden}
+.ptable .vbar span{display:block;height:100%;transition:width .7s}
+.ptable .vs b{font-family:var(--num);font-size:18px;min-width:52px;text-align:right}
+.badge{display:inline-block;font-size:10px;font-weight:800;color:#fff;padding:1px 6px;border-radius:2px;margin-left:4px;vertical-align:1px}
+@media (max-width:680px){.ptable{width:calc(100% - 24px);margin:12px 12px 0;font-size:13px}.ptable .n{width:48px;font-size:17px}}
