@@ -1,6 +1,5 @@
 /* 2026 미국 중간선거 개표 특보 */
 (() => {
-  const REPO = 'Hosain1291/midterm2026';
   const REFRESH_MS = 60000;
   const SMALL = ['VT', 'NH', 'MA', 'RI', 'CT', 'NJ', 'DE', 'MD'];
   const PARTY = {
@@ -34,8 +33,7 @@
 
   /* =========================================================
      데이터: 기본 정보 + 실시간 피드
-     1순위 Poliwave (GitHub Actions가 live 브랜치에 올린 live.json)
-     2순위 civicAPI 공개 피드 (브라우저에서 직접)
+     civicAPI 공개 피드 (브라우저에서 직접, 1분마다)
      ========================================================= */
   async function loadBase() {
     try {
@@ -51,34 +49,6 @@
       if (!r.ok) { const e = new Error(r.status); e.status = r.status; throw e; }
       return await r.json();
     } finally { clearTimeout(t); }
-  }
-
-  // --- Poliwave ---
-  let pwMode = 'api', pwMissingAt = 0;
-  async function loadPoliwave() {
-    if (pwMissingAt && Date.now() - pwMissingAt < 600000) return false; // live 브랜치가 없으면 10분 뒤 재시도
-    let d;
-    try {
-      if (pwMode === 'api') {
-        d = await getJSON(`https://api.github.com/repos/${REPO}/contents/live.json?ref=live`, { headers: { Accept: 'application/vnd.github.raw+json' } });
-      } else {
-        d = await getJSON(`https://raw.githubusercontent.com/${REPO}/live/live.json?t=${Date.now()}`);
-      }
-    } catch (e) {
-      if (e.status === 404) { pwMissingAt = Date.now(); return false; }
-      if (pwMode === 'api' && (e.status === 403 || e.status === 429)) { pwMode = 'raw'; return loadPoliwave(); }
-      return false;
-    }
-    pwMissingAt = 0;
-    const age = Date.now() - new Date(d.fetchedAt).getTime();
-    if (!d.available || !(age < 15 * 60000)) return false;
-    live.src = 'poliwave';
-    live.senate = d.senate || {}; live.governor = d.governor || {}; live.house = d.house || {};
-    live.test = false; live.rehearsal = !!d.rehearsal;
-    live.updated = d.sourceTime || d.fetchedAt;
-    live.attribution = d.attribution || 'Poliwave';
-    live.page = d.page || 'https://www.poliwave.com/us/live/midterms-2026';
-    return true;
   }
 
   // --- civicAPI ---
@@ -151,8 +121,7 @@
   async function refresh() {
     if (!data) return;
     let ok = false;
-    try { ok = await loadPoliwave(); } catch (e) {}
-    if (!ok) { try { ok = await loadCivic(); } catch (e) {} }
+    try { ok = await loadCivic(); } catch (e) {}
     live.ok = ok;
     setStatus();
     render();
@@ -161,15 +130,13 @@
   const fmtTime = iso => new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
   function setStatus() {
     $('status').classList.toggle('stale', !live.ok);
-    const name = live.src === 'poliwave' ? 'Poliwave' : live.src === 'civic' ? 'civicAPI' : '';
+    const name = 'civicAPI';
     let t;
     if (!live.ok) t = '피드 연결 재시도 중…';
     else if (live.test) t = `${name} · 개표 시작 전`;
     else t = `${name}${live.rehearsal ? ' 리허설' : ''} · ${live.updated ? fmtTime(live.updated) : '개표 시작 전'}`;
     $('statusText').textContent = t;
-    $('srcLine').innerHTML = live.src === 'poliwave'
-      ? `개표 수치·당선 판정: <a href="${esc(live.page)}" target="_blank" rel="noopener">${esc(live.attribution)}</a> (Poliwave Results API)`
-      : `개표 수치·당선 판정: <a href="https://civicapi.org" target="_blank" rel="noopener">civicAPI (civicapi.org)</a> 공개 피드`;
+    $('srcLine').innerHTML = '개표 수치·당선 판정: <a href="https://civicapi.org" target="_blank" rel="noopener">civicAPI (civicapi.org)</a> 공개 피드';
   }
 
   /* =========================================================
@@ -642,7 +609,7 @@
     document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
     $('tip').hidden = true;
     render();
-    if (view === 'governor' && data && live.src !== 'poliwave' && Date.now() - live.govAt > 60000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
+    if (view === 'governor' && data && Date.now() - live.govAt > 60000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
   }
   $('filters').addEventListener('click', e => {
     const b = e.target.closest('button');
