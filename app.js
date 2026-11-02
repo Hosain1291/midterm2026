@@ -633,8 +633,8 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json').then(r => r.json()),
-    fetch('data/house-grid.json').then(r => r.json()),
+    fetch('data/states.json?v=202611020959').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611020959').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
