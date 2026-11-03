@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=202611021006">
+<link rel="stylesheet" href="style.css?v=202611031724">
 </head>
 <body>
 <header class="top">
@@ -91,15 +91,19 @@
   <footer class="foot">
     <p id="srcLine">개표 수치·당선 판정: 공개 피드</p>
     <p>모든 수치는 비공식 개표 중간 집계입니다. 공식 결과는 각 주 선거관리 당국의 확정 발표를 따릅니다.</p>
-    <p>상원은 이번에 선거가 없는 65석(민주 계열 34 · 공화 31)을 더해 계산하며, 50 대 50 동수면 부통령(공화)이 캐스팅보트를 가집니다. 하원 카토그램의 육각형 하나는 선거구 하나이며, 주별 칸 수를 의석 수에 맞추느라 칸 위치는 실제 선거구 위치와 다릅니다.</p>
+    <p>상원은 이번에 선거가 없는 65석(민주 계열 34 · 공화 31)을 더해 계산하며, 50 대 50 동수면 부통령(공화)이 캐스팅보트를 가집니다. 지도의 주나 육각형을 누르면 해당 지역 결과가 열립니다. 하원 카토그램의 육각형 하나는 선거구 하나이며, 주별 칸 수를 의석 수에 맞추느라 칸 위치는 실제 선거구 위치와 다릅니다.</p>
   </footer>
 </main>
+
+<div class="detail" id="detail" hidden>
+  <div class="detail-card" role="dialog" aria-modal="true" id="detailBody"></div>
+</div>
 
 <div class="ticker" id="ticker">
   <span class="ticker-label">속보</span>
   <div class="ticker-track"><div class="ticker-move" id="tickerMove"><span>개표 결과가 들어오면 이곳에 당선 확정 소식이 표시됩니다</span></div></div>
 </div>
 
-<script src="app.js?v=202611021006"></script>
+<script src="app.js?v=202611031724"></script>
 </body>
 </html>

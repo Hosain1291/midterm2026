@@ -505,7 +505,7 @@
     $('callList').innerHTML = calls.map(c => {
       const x = callText(c);
       const go = c.v === 'house' ? c.id.split('-')[0] : c.r.state;
-      return `<div class="mrow" data-go="${go}"><span class="bar6" style="background:${P(x.party).c}"></span>
+      return `<div class="mrow" data-go="${go}"${c.v === 'house' ? ` data-d="${c.id}"` : ''}><span class="bar6" style="background:${P(x.party).c}"></span>
         <div><div class="t">${x.where} <span class="badge" style="background:${P(x.party).c}">${P(x.party).ko} ${x.house ? '당선' : x.flip ? '탈환' : '유지'}</span></div><div class="s">${x.who} 당선${x.flip ? ` · ${P(x.from).ko}에서 넘어옴` : ''}</div></div>
         <div class="m"><small>${new Date(c.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false })}</small></div></div>`;
     }).join('') || '<div class="empty">아직 당선이 확정된 곳이 없습니다</div>';
@@ -570,7 +570,7 @@
     const hs = houseState(st);
     const sq = hs.ds.map(d => {
       const c = d.status === 'called' ? P(d.party).c : d.status === 'counting' ? P(d.party).l : 'var(--map-wait)';
-      return `<i style="background:${c}" title="${distName(d.id)}"></i>`;
+      return `<i data-d="${d.id}" style="background:${c}" title="${distName(d.id)}"></i>`;
     }).join('');
     const cls = hs.status === 'called' ? 'st-called' : hs.status === 'counting' ? 'st-count' : '';
     const ld = hs.lead.D + hs.lead.R + hs.lead.I;
@@ -603,6 +603,87 @@
     document.querySelector('[data-f="key"]').style.display = view === 'house' ? 'none' : '';
   }
 
+  /* =========================================================
+     상세 결과 창 (지도·카드 클릭)
+     ========================================================= */
+  let detailOpen = null;
+  function candRows(cands, winIdx) {
+    const order = cands.map((c, i) => i).sort((a, b) => (+cands[b].pct || 0) - (+cands[a].pct || 0));
+    return order.map(i => {
+      const c = cands[i];
+      const win = i === winIdx;
+      const col = P(group(c.party)).c;
+      return `<div class="cand${win ? ' win' : ''}"><span class="sw" style="background:${col}"></span>
+        <div class="nm">${esc(c.name || c.en)}<span class="pp">${P(c.party).ko}</span>${c.inc ? '<span class="inc">현직</span>' : ''}${win ? '<span class="chk">당선</span>' : ''}</div>
+        <div class="pc">${pct(c.pct)}${c.votes ? `<small>${c.votes.toLocaleString('ko-KR')}표</small>` : ''}</div>
+        <div class="track"><span style="width:${Math.min(100, +c.pct || 0)}%;background:${col}"></span></div></div>`;
+    }).join('') || '<div class="dt-empty">후보 정보가 아직 없습니다</div>';
+  }
+  function detailHTML(d) {
+    const OFF = { senate: '상원', governor: '주지사', house: '하원' };
+    if (d.type === 'district') {
+      const st = d.id.split('-')[0];
+      const s = district(d.id);
+      const L = s.L;
+      const cands = L && L.cands ? L.cands.map(c => ({ ...c, name: c.en })) : [];
+      const winIdx = s.status === 'called' ? cands.findIndex(c => c.winner) : -1;
+      const total = cands.reduce((a, c) => a + (c.votes || 0), 0);
+      const sorted = [...cands].sort((a, b) => b.pct - a.pct);
+      const m = sorted.length > 1 && sorted[0].pct ? sorted[0].pct - sorted[1].pct : null;
+      const hs = houseState(st);
+      const seats = hs.ds.map(x => {
+        const c = x.status === 'called' ? P(x.party).c : x.status === 'counting' ? P(x.party).l : 'var(--map-wait)';
+        return `<i data-d="${x.id}" class="${x.id === d.id ? 'cur' : ''}" style="background:${c}" title="${distName(x.id)}"></i>`;
+      }).join('');
+      return `<div class="dt-head"><div><span class="dt-kicker">하원 · ${geo.states[st].en} ${d.id.split('-')[1] === 'AL' ? 'At-Large' : 'District ' + (+d.id.split('-')[1])}</span>
+          <h3>${distName(d.id)}</h3></div><button class="dt-x" data-close aria-label="닫기">✕</button></div>
+        ${s.status === 'called' ? `<div class="dt-call" style="background:${P(s.party).c}">${P(s.party).ko} 당선 확정</div>` : ''}
+        <div class="cands">${candRows(cands, winIdx)}</div>
+        <div class="dt-stats">
+          <div><span>상태</span><b>${s.status === 'called' ? '당선 확정' : s.status === 'counting' ? '개표 중' : '개표 전'}</b></div>
+          <div><span>개표율</span><b>${L && L.reporting ? Math.round(L.reporting) + '%' : '–'}</b></div>
+          <div><span>격차</span><b>${m !== null ? m.toFixed(1) + '%p' : '–'}</b></div>
+          <div><span>총 득표</span><b>${total ? total.toLocaleString('ko-KR') : '–'}</b></div>
+        </div>
+        <div class="dt-sub">${geo.states[st].ko} 하원 ${hs.seats}석 · 민주 ${hs.won.D} / 공화 ${hs.won.R}${hs.won.I ? ' / 기타 ' + hs.won.I : ''} 확정 <small>(칸을 누르면 다른 선거구)</small></div>
+        <div class="dt-seats">${seats}</div>`;
+    }
+    const st = d.st, g = geo.states[st];
+    const v = view === 'house' ? 'senate' : view;
+    const r = racesOf(v).find(x => x.state === st);
+    const head = `<div class="dt-head"><div><span class="dt-kicker">${OFF[v]}${r && r.label ? ' · ' + r.label : ''} · ${g.en}</span><h3>${g.ko}</h3></div><button class="dt-x" data-close aria-label="닫기">✕</button></div>`;
+    if (!r) return head + `<div class="dt-empty">${g.ko}에는 이번에 ${OFF[v]} 선거가 없습니다.</div>`;
+    const s = raceState(r);
+    const flip = s.status === 'called' && group(s.party) !== r.incumbentParty;
+    const total = r.candidates.reduce((a, c) => a + (c.votes || 0), 0);
+    const m = margin(r);
+    return head + `
+      ${s.status === 'called' ? `<div class="dt-call" style="background:${P(group(s.party)).c}">${P(group(s.party)).ko} ${flip ? `탈환 (${P(r.incumbentParty).ko}→${P(group(s.party)).ko})` : '유지'} · 당선 확정</div>` : ''}
+      <div class="cands">${candRows(r.candidates, s.status === 'called' ? s.idx : -1)}</div>
+      <div class="dt-stats">
+        <div><span>상태</span><b>${statusText(r, s)}</b></div>
+        <div><span>개표율</span><b>${r.reporting ? Math.round(r.reporting) + '%' : '–'}</b></div>
+        <div><span>격차</span><b>${m !== null ? m.toFixed(1) + '%p' : '–'}</b></div>
+        <div><span>총 득표</span><b>${total ? total.toLocaleString('ko-KR') : '–'}</b></div>
+      </div>
+      <div class="dt-sub">현재 ${P(r.incumbentParty).ko} 보유${r.open ? ' · 현직 불출마' : ''}${r.key ? ' · 주목 선거' : ''}</div>`;
+  }
+  function openDetail(d) {
+    detailOpen = d;
+    $('detailBody').innerHTML = detailHTML(d);
+    $('detail').hidden = false;
+    document.body.classList.add('noscroll');
+    document.querySelectorAll('#map .sel').forEach(x => x.classList.remove('sel'));
+    const sel = d.type === 'district' ? document.querySelector(`#map [data-d="${d.id}"]`) : document.querySelector(`#map path[data-st="${d.st}"], #map rect[data-st="${d.st}"]`);
+    if (sel) sel.classList.add('sel');
+  }
+  function closeDetail() {
+    detailOpen = null;
+    $('detail').hidden = true;
+    document.body.classList.remove('noscroll');
+    document.querySelectorAll('#map .sel').forEach(x => x.classList.remove('sel'));
+  }
+
   function render() {
     if (!data || !geo || !grid) return;
     mergedCache = {}; houseCache = null;
@@ -619,6 +700,7 @@
     renderSide();
     renderTicker();
     renderGrid();
+    if (detailOpen) $('detailBody').innerHTML = detailHTML(detailOpen);
   }
 
   /* =========================================================
@@ -630,6 +712,7 @@
     if (filter === 'key' && view === 'house') filter = 'all';
     document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
     $('tip').hidden = true;
+    closeDetail();
     render();
     if (view === 'governor' && data && Date.now() - live.govAt > 60000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
   }
@@ -646,17 +729,34 @@
   svg.addEventListener('mouseleave', () => { $('tip').hidden = true; });
   svg.addEventListener('click', e => {
     const el = e.target.closest('[data-st]');
-    if (el) focusCard(el.dataset.st);
+    if (!el) return;
+    $('tip').hidden = true;
+    if (view === 'house' && el.dataset.d) openDetail({ type: 'district', id: el.dataset.d });
+    else openDetail({ type: 'race', st: el.dataset.st });
   });
   document.querySelector('.side').addEventListener('click', e => {
     const r = e.target.closest('[data-go]');
-    if (r) focusCard(r.dataset.go);
+    if (!r) return;
+    if (r.dataset.d) openDetail({ type: 'district', id: r.dataset.d });
+    else openDetail({ type: 'race', st: r.dataset.go });
   });
+  $('grid').addEventListener('click', e => {
+    const sq = e.target.closest('[data-d]');
+    if (sq) { openDetail({ type: 'district', id: sq.dataset.d }); return; }
+    const card = e.target.closest('.race');
+    if (card && view !== 'house') openDetail({ type: 'race', st: card.id.replace('race-', '') });
+  });
+  $('detail').addEventListener('click', e => {
+    if (e.target === $('detail') || e.target.closest('[data-close]')) closeDetail();
+    const go = e.target.closest('[data-d]');
+    if (go && go.closest('.dt-seats')) openDetail({ type: 'district', id: go.dataset.d });
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611021006').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611021006').then(r => r.json()),
+    fetch('data/states.json?v=202611031724').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031724').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
