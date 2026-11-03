@@ -851,75 +851,34 @@
     if (go && go.closest('.dt-seats')) openDetail({ type: 'district', id: go.dataset.d });
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
-  window.addEventListener('hashchange', () => { route(); schedule(SCENE_SEC * 1000); });
+  window.addEventListener('hashchange', route);
 
   /* =========================================================
-     화면 자동 넘김 (방송처럼 상원 → 하원 → 주지사, 화면당 유지 시간)
+     화면 꺼짐 방지 (Screen Wake Lock)
+     페이지를 보고 있는 동안 컴퓨터·휴대폰 화면이 자동으로 꺼지지 않게 함.
+     다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐.
      ========================================================= */
-  const SCENE_SEC = 15;
-  const ORDER = ['senate', 'house', 'governor'];
-  let sceneTimer = null, paused = false, dueAt = 0, remain = 0;
-  try { paused = localStorage.getItem('autoplay') === 'off'; } catch (e) {}
-  function markTab(sec) {
-    document.querySelectorAll('#tabs a').forEach(a => {
-      a.classList.remove('run'); void a.offsetWidth;
-      if (a.dataset.view === view && !paused) { a.style.setProperty('--dur', sec + 's'); a.classList.add('run'); }
-    });
+  let wakeLock = null;
+  async function keepAwake() {
+    if (!('wakeLock' in navigator) || document.hidden || wakeLock) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) { console.warn('화면 꺼짐 방지를 켜지 못함:', e.message); }
   }
-  function busy() {
-    // 상세 창을 보고 있거나, 화면을 아래로 내려 읽고 있거나, 검색 중이면 넘기지 않음
-    return !!detailOpen || window.scrollY > 260 || document.activeElement === $('search');
-  }
-  function schedule(ms) {
-    clearTimeout(sceneTimer); remain = ms;
-    if (paused) { markTab(0); return; }
-    dueAt = Date.now() + ms;
-    markTab(ms / 1000);
-    sceneTimer = setTimeout(() => {
-      if (busy()) { schedule(3000); return; }
-      goScene(ORDER[(ORDER.indexOf(view) + 1) % ORDER.length]);
-    }, ms);
-  }
-  function goScene(v) {
-    history.replaceState(null, '', '#' + v);
-    route();
-    schedule(SCENE_SEC * 1000);
-  }
-  function setPaused(p) {
-    paused = p;
-    try { localStorage.setItem('autoplay', p ? 'off' : 'on'); } catch (e) {}
-    const b = $('playBtn');
-    b.textContent = p ? '▶' : '❚❚';
-    b.classList.toggle('paused', p);
-    b.setAttribute('aria-label', p ? '화면 자동 넘김 재생' : '화면 자동 넘김 멈춤');
-    if (p) { clearTimeout(sceneTimer); remain = Math.max(0, dueAt - Date.now()); markTab(0); }
-    else schedule(remain > 1000 ? remain : SCENE_SEC * 1000);
-  }
-  $('playBtn').addEventListener('click', () => setPaused(!paused));
-  document.addEventListener('keydown', e => {
-    if (e.target.closest && e.target.closest('input')) return;
-    if (e.key === ' ') { e.preventDefault(); setPaused(!paused); }
-    else if (e.key === 'ArrowRight') goScene(ORDER[(ORDER.indexOf(view) + 1) % 3]);
-    else if (e.key === 'ArrowLeft') goScene(ORDER[(ORDER.indexOf(view) + 2) % 3]);
-    else if (e.key === 'f' || e.key === 'F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
-  });
-  $('tabs').addEventListener('click', e => {
-    const a = e.target.closest('a[data-view]');
-    if (!a) return;
-    e.preventDefault();
-    goScene(a.dataset.view);
-  });
+  keepAwake();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
+  ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611031935').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031935').then(r => r.json()),
+    fetch('data/states.json?v=202611031936').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031936').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611031935').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611031936').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
-    setPaused(paused);
     refresh();
     setInterval(refresh, REFRESH_MS);
     setInterval(loadBase, 300000);

@@ -299,11 +299,3 @@ body.noscroll{overflow:hidden}
 [data-theme=light] .ticker-move .tk-s.won{color:#b26b00}
 [data-theme=light] .top{border-bottom:1px solid var(--line)}
 
-/* 화면 자동 넘김: 탭 아래 진행 막대 + 재생/멈춤 */
-.tabs a{position:relative;overflow:hidden}
-.tabs a::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--accent)}
-.tabs a.run::after{animation:tabfill var(--dur,15s) linear forwards}
-@keyframes tabfill{from{width:0}to{width:100%}}
-.play{all:unset;cursor:pointer;width:38px;align-self:stretch;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-weight:800;font-size:14px;margin-right:4px;clip-path:polygon(0 0,100% 0,calc(100% - 6px) 100%,0 100%)}
-.play.paused{background:var(--tab-bg);color:var(--top-ink)}
-.play:focus-visible{outline:2px solid var(--gold)}
