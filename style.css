@@ -175,12 +175,22 @@ h2::before{content:"";width:4px;height:16px;background:var(--accent);display:inl
 /* ===== 하단 속보 띠 ===== */
 .ticker{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:stretch;background:#071226;color:#fff;z-index:40;border-top:2px solid var(--accent)}
 .ticker-label{background:var(--accent);font-weight:900;font-size:15px;display:flex;align-items:center;padding:0 22px 0 16px;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%);flex:none}
-.ticker-track{overflow:hidden;flex:1;display:flex;align-items:center;mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent)}
-.ticker-move{display:flex;gap:48px;white-space:nowrap;padding-left:100%;animation:tick 40s linear infinite;font-size:14px;font-weight:600}
+.ticker-label{min-width:84px;justify-content:center;transition:background .3s}
+.ticker:not(.hot) .ticker-label{background:#24324e}
+.ticker.hot .ticker-label{background:var(--accent);animation:blink 1s 3}
+.ticker-track{overflow:hidden;flex:1;display:flex;align-items:center;padding:0 16px}
+.ticker-move{display:flex;align-items:center;gap:14px;white-space:nowrap;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.ticker-move.in{animation:tkin .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes tkin{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
 .ticker-move b{font-weight:900}
-.ticker-move .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:1px}
-@keyframes tick{to{transform:translateX(-100%)}}
-@media (prefers-reduced-motion:reduce){.ticker-move{animation-duration:120s}}
+.ticker-move .tk-w{font-size:16px}
+.ticker-move .tk-c{display:inline-flex;align-items:center;gap:4px}
+.ticker-move .tk-c b{font-family:var(--num);font-size:18px}
+.ticker-move .tk-s{color:#9fb0cc;font-size:13px}
+.ticker-move .tk-s.won{color:var(--gold);font-weight:800}
+.ticker-move .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:3px}
+@media (prefers-reduced-motion:reduce){.ticker-move.in{animation:none}}
+@media (max-width:680px){.ticker-label{min-width:60px;font-size:13px;padding:0 16px 0 10px}.ticker-move{font-size:13px;gap:10px}.ticker-move .tk-w{font-size:14px}.ticker-move .tk-c b{font-size:15px}.ticker-move .tk-s{display:none}}
 
 @media (max-width:980px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}}
 @media (max-width:680px){

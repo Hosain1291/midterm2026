@@ -540,23 +540,89 @@
         <div class="m"><small>${new Date(c.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false })}</small></div></div>`;
     }).join('') || '<div class="empty">아직 당선이 확정된 곳이 없습니다</div>';
   }
-  let lastTicker = '';
-  function renderTicker() {
-    const all = [...seenCalls.values()].sort((a, b) => b.t - a.t);
-    const pick = all.filter(c => c.v !== 'house').slice(0, 12).concat(all.filter(c => c.v === 'house').slice(0, 8));
-    let html;
-    if (!pick.length) html = `<span>${live.test || !live.updated ? '개표가 시작되면 당선 확정 소식이 이곳에 흐릅니다' : '개표가 진행 중입니다 — 아직 당선 확정된 곳이 없습니다'}</span>`;
-    else html = pick.map(c => {
-      const x = callText(c);
-      return `<span><i class="dot" style="background:${P(x.party).c}"></i><b>${x.where}</b> ${x.who}(${P(x.party).ko}) 당선 확정${x.flip ? ` — ${P(x.from).ko}→${P(x.party).ko} 교체` : ''}</span>`;
-    }).join('');
-    if (html !== lastTicker) {
-      lastTicker = html;
-      const m = $('tickerMove');
-      m.innerHTML = html;
-      m.style.animationDuration = Math.max(30, m.scrollWidth / 70) + 's';
-    }
+  /* ---------- 하단 뉴스 띠: 한 줄씩 차례로 ---------- */
+  let tickItems = [], tickIdx = 0, tickKey = '', tickMode = '';
+  function candLine(cands, winIdx) {
+    return [...cands].map((c, i) => ({ c, i })).filter(x => x.c.pct > 0).sort((a, b) => b.c.pct - a.c.pct).slice(0, 2)
+      .map(({ c, i }) => `<span class="tk-c"><i class="dot" style="background:${P(group(c.party)).c}"></i>${esc(c.name)}${i === winIdx ? ' ✓' : ''} <b>${c.pct.toFixed(1)}%</b></span>`).join('');
   }
+  function raceItem(v, r) {
+    const s = raceState(r);
+    const where = `${geo.states[r.state].ko} ${OFFICE[v]}`;
+    if (s.status === 'wait' || (s.status === 'counting' && !r.candidates.some(c => c.pct > 0))) return null;
+    const tail = s.status === 'called'
+      ? `<span class="tk-s won">${esc(r.candidates[s.idx].name)} 당선${group(s.party) !== r.incumbentParty ? ` · ${P(r.incumbentParty).ko}→${P(group(s.party)).ko} 교체` : ''}</span>`
+      : `<span class="tk-s">개표 ${Math.round(r.reporting || 0)}%</span>`;
+    return { tag: OFFICE[v], html: `<b class="tk-w">${where}</b>${candLine(r.candidates, s.status === 'called' ? s.idx : -1)}${tail}` };
+  }
+  function houseItem(id) {
+    const s = district(id);
+    if (s.status === 'wait' || !s.L) return null;
+    const cs = s.L.cands.map(c => ({ ...c, name: hName(id, c.en, c.party) }));
+    const wi = s.status === 'called' ? cs.findIndex(c => c.winner) : -1;
+    const tail = wi >= 0 ? `<span class="tk-s won">${esc(cs[wi].name)} 당선</span>` : `<span class="tk-s">개표 ${Math.round(s.L.reporting || 0)}%</span>`;
+    return { tag: '하원', html: `<b class="tk-w">${distName(id)}</b>${candLine(cs, wi)}${tail}` };
+  }
+  // 개표 전 안내 문구
+  function preItems() {
+    const keyS = racesOf('senate').filter(r => r.key).map(r => geo.states[r.state].ko).join('·');
+    const keyG = racesOf('governor').filter(r => r.key).map(r => geo.states[r.state].ko).join('·');
+    const msgs = [
+      ['안내', '<b>2026 미국 중간선거</b> 상원 35석 · 하원 435석 전체 · 주지사 36곳을 새로 뽑습니다'],
+      ['일정', '현지 11월 3일 투표 · <b>한국시간 4일 오전 8시</b>부터 동부 주를 시작으로 투표가 마감됩니다'],
+      ['일정', '한국시간 <b>오전 9~10시</b> 조지아·노스캐롤라이나·펜실베이니아 등 동부 경합주 마감 · <b>오전 11시</b> 미시간·애리조나·위스콘신'],
+      ['일정', '한국시간 <b>오후 1시</b> 캘리포니아·오리건·워싱턴 마감 · <b>오후 3시</b> 알래스카를 끝으로 모든 투표 종료'],
+      ['상원', '상원 다수당 기준 <b>51석</b> · 50 대 50 동수면 부통령(공화)이 캐스팅보트 · 선거 없는 의석 민주 계열 34 · 공화 31'],
+      ['상원', `주목할 상원 경합: <b>${keyS}</b>`],
+      ['하원', '하원 과반 기준 <b>218석</b> · 435석 전체를 새로 뽑습니다 · 하원 탭의 육각형 하나가 선거구 하나'],
+      ['주지사', `주목할 주지사 경합: <b>${keyG}</b>`],
+      ['안내', '지도에서 주나 하원 육각형을 누르면 그 지역 후보별 결과를 볼 수 있습니다'],
+      ['안내', '개표가 시작되면 이 띠에 주요 경합의 실시간 득표와 당선 확정 소식이 차례로 나옵니다'],
+    ];
+    return msgs.map(([tag, html]) => ({ tag, html }));
+  }
+  function buildTicker() {
+    const counting = !live.test && (racesOf('senate').some(r => raceState(r).status !== 'wait') || Object.keys(live.house).some(id => district(id).status !== 'wait'));
+    if (!counting) return preItems();
+    // 최근 10분 안 당선 확정 = 속보
+    const fresh = [...seenCalls.values()].filter(c => Date.now() - c.t < 600000).sort((a, b) => b.t - a.t).slice(0, 6).map(c => {
+      const x = callText(c);
+      return { tag: '속보', hot: true, html: `<b class="tk-w">${x.where}</b><span class="tk-c"><i class="dot" style="background:${P(x.party).c}"></i>${x.who}(${P(x.party).ko})</span><span class="tk-s won">당선 확정${x.flip ? ` · ${P(x.from).ko}→${P(x.party).ko} 교체` : ''}</span>` };
+    });
+    const sen = racesOf('senate').filter(r => r.key).map(r => raceItem('senate', r)).filter(Boolean);
+    const gov = racesOf('governor').filter(r => r.key).map(r => raceItem('governor', r)).filter(Boolean);
+    // 주목 하원: 개표 중이면서 격차가 가장 작은 선거구
+    const close = grid.districts.map(d => ({ id: d.id, s: district(d.id) }))
+      .filter(x => x.s.status === 'counting' && x.s.L && x.s.L.total > 0)
+      .map(x => { const c = [...x.s.L.cands].sort((a, b) => b.pct - a.pct); return { id: x.id, m: c.length > 1 ? c[0].pct - c[1].pct : 100 }; })
+      .sort((a, b) => a.m - b.m).slice(0, 10).map(x => houseItem(x.id)).filter(Boolean);
+    const out = [...fresh];
+    const n = Math.max(sen.length, gov.length, close.length);
+    for (let i = 0; i < n; i++) { if (sen[i]) out.push(sen[i]); if (close[i]) out.push(close[i]); if (gov[i]) out.push(gov[i]); }
+    return out.length ? out : [{ tag: '개표', html: '개표가 진행 중입니다 — 주요 경합 집계를 기다리고 있습니다' }];
+  }
+  function renderTicker() {
+    const items = buildTicker();
+    const key = items.map(i => i.html).join('|');
+    if (key === tickKey) return;
+    const mode = items[0] && items[0].hot ? 'hot' : items.length && ['안내', '일정'].includes(items[0].tag) ? 'pre' : 'live';
+    const reset = !tickItems.length || mode !== tickMode;
+    tickItems = items; tickKey = key; tickMode = mode;
+    if (reset) { tickIdx = 0; showTick(); }
+    else if (tickIdx >= items.length) tickIdx = 0;
+  }
+  function showTick() {
+    if (!tickItems.length) return;
+    const it = tickItems[tickIdx % tickItems.length];
+    $('tickerLabel').textContent = it.tag;
+    $('ticker').classList.toggle('hot', !!it.hot);
+    const box = $('tickerMove');
+    box.classList.remove('in'); void box.offsetWidth;
+    box.innerHTML = it.html;
+    box.classList.add('in');
+    tickIdx = (tickIdx + 1) % tickItems.length;
+  }
+  setInterval(showTick, 6000);
 
   /* =========================================================
      카드
@@ -785,13 +851,13 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611031738').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031738').then(r => r.json()),
+    fetch('data/states.json?v=202611031814').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031814').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611031738').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611031814').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);
