@@ -14,7 +14,7 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  let hnames = {};
+  let hnames = {}, mnames = {};
   let geo = null, grid = null, data = null, view = 'senate', filter = 'all', query = '';
   const live = { src: null, senate: {}, governor: {}, house: {}, test: false, rehearsal: false, ok: null, updated: null, govAt: 0, attribution: '', page: '' };
   const seenCalls = new Map(); // 키 → 처음 본 시각
@@ -149,10 +149,11 @@
 
   // 하원 후보 한국어 이름: 같은 선거구에서 성(+이름·정당)으로 짝 맞춤
   const koCache = new Map();
-  function hName(id, en, party) {
+  function hName(id, en, party) { return koName(hnames[id], id, en, party); }
+  function koName(list0, id, en, party) {
     const k = id + '|' + en;
     if (koCache.has(k)) return koCache.get(k);
-    const list = hnames[id] || [];
+    const list = list0 || [];
     const a = parts(en);
     let best = null, score = 0;
     for (const [e, ko, p] of list) {
@@ -161,13 +162,14 @@
       let sc = 0;
       if (a.full === b.full) sc += 10;
       if (a.last === b.last) sc += 4;
+      if (b.full === b.last && a.last === b.last) sc += 1; // 성만 아는 후보
       if (a.first === b.first || (nick && norm(nick) === a.first)) sc += 2;
       else if (b.first && a.first && (b.first.startsWith(a.first) || a.first.startsWith(b.first))) sc += 1;
       if (party && group(party) === group(p)) sc += 1;
       if (sc > score) { score = sc; best = ko; }
     }
     const out = score >= 4 ? best : en;
-    if (hnames[id]) koCache.set(k, out);
+    if (list0) koCache.set(k, out);
     return out;
   }
 
@@ -197,7 +199,10 @@
         }
       });
       (L.cands || []).forEach((f, j) => {
-        if (!used.has(j) && f.pct >= 1) cands.push({ name: f.en, party: f.party, votes: f.votes, pct: f.pct, fw: f.winner, extra: true });
+        if (!used.has(j) && f.pct >= 0.5) {
+          const ko = r.office ? koName((mnames[r.office] || {})[r.state], r.office + r.state, f.en, f.party) : f.en;
+          cands.push({ name: ko, sub: ko !== f.en ? f.en : '', party: f.party, votes: f.votes, pct: f.pct, fw: f.winner, extra: true });
+        }
       });
     }
     let winner = r.winner;
@@ -224,7 +229,7 @@
   let mergedCache = {}, houseCache = null;
   function racesOf(v) {
     if (v === 'house') return [];
-    if (!mergedCache[v]) mergedCache[v] = data[v].races.map(r => merge(r, live[v][r.state]));
+    if (!mergedCache[v]) mergedCache[v] = data[v].races.map(r => merge({ ...r, office: v }, live[v][r.state]));
     return mergedCache[v];
   }
   const races = () => racesOf(view);
@@ -780,12 +785,13 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611031733').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031733').then(r => r.json()),
+    fetch('data/states.json?v=202611031738').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031738').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
-    fetch('data/house-names.json?v=20261103173302611031733').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611031738').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);
