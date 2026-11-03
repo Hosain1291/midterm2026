@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=202611031933">
+<link rel="stylesheet" href="style.css?v=202611031935">
 </head>
 <body>
 <header class="top">
@@ -41,6 +41,7 @@
     </div>
   </div>
   <nav class="wrap tabs" id="tabs">
+    <button type="button" class="play" id="playBtn" aria-label="화면 자동 넘김 멈춤" title="화면 자동 넘김 멈춤/재생 (스페이스)">❚❚</button>
     <a href="#senate" data-view="senate">상원<small>35곳</small></a>
     <a href="#house" data-view="house">하원<small>435석</small></a>
     <a href="#governor" data-view="governor">주지사<small>36곳</small></a>
@@ -94,7 +95,7 @@
   <footer class="foot">
     <p id="srcLine">개표 수치·당선 판정: 공개 피드</p>
     <p>모든 수치는 비공식 개표 중간 집계입니다. 공식 결과는 각 주 선거관리 당국의 확정 발표를 따릅니다.</p>
-    <p>상원은 이번에 선거가 없는 65석(민주 계열 34 · 공화 31)을 더해 계산하며, 50 대 50 동수면 부통령(공화)이 캐스팅보트를 가집니다. 지도의 주나 육각형을 누르면 해당 지역 결과가 열립니다. 하원 카토그램의 육각형 하나는 선거구 하나이며, 주별 칸 수를 의석 수에 맞추느라 칸 위치는 실제 선거구 위치와 다릅니다.</p>
+    <p>상원은 이번에 선거가 없는 65석(민주 계열 34 · 공화 31)을 더해 계산하며, 50 대 50 동수면 부통령(공화)이 캐스팅보트를 가집니다. </p><p>화면은 상원 → 하원 → 주지사 순서로 15초마다 자동으로 넘어갑니다 (❚❚ 버튼·스페이스로 멈춤, ←→로 이동, F 전체 화면). 지도의 주나 육각형을 누르면 해당 지역 결과가 열립니다. 하원 카토그램의 육각형 하나는 선거구 하나이며, 주별 칸 수를 의석 수에 맞추느라 칸 위치는 실제 선거구 위치와 다릅니다.</p>
   </footer>
 </main>
 
@@ -107,6 +108,6 @@
   <div class="ticker-track"><div class="ticker-move" id="tickerMove">2026 미국 중간선거 개표 특보</div></div>
 </div>
 
-<script src="app.js?v=202611031933"></script>
+<script src="app.js?v=202611031935"></script>
 </body>
 </html>
