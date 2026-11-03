@@ -14,6 +14,7 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  let hnames = {};
   let geo = null, grid = null, data = null, view = 'senate', filter = 'all', query = '';
   const live = { src: null, senate: {}, governor: {}, house: {}, test: false, rehearsal: false, ok: null, updated: null, govAt: 0, attribution: '', page: '' };
   const seenCalls = new Map(); // 키 → 처음 본 시각
@@ -145,6 +146,30 @@
   const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
     .replace(/[.,'"()]/g, ' ').replace(/\b(jr|sr|ii|iii|iv)\b/g, ' ').replace(/\s+/g, ' ').trim();
   const parts = s => { const w = norm(s).split(' ').filter(Boolean); return { first: w[0] || '', last: w[w.length - 1] || '', full: w.join(' ') }; };
+
+  // 하원 후보 한국어 이름: 같은 선거구에서 성(+이름·정당)으로 짝 맞춤
+  const koCache = new Map();
+  function hName(id, en, party) {
+    const k = id + '|' + en;
+    if (koCache.has(k)) return koCache.get(k);
+    const list = hnames[id] || [];
+    const a = parts(en);
+    let best = null, score = 0;
+    for (const [e, ko, p] of list) {
+      const b = parts(e.replace(/"[^"]*"/g, ' '));
+      const nick = (e.match(/"([^"]+)"/) || [])[1];
+      let sc = 0;
+      if (a.full === b.full) sc += 10;
+      if (a.last === b.last) sc += 4;
+      if (a.first === b.first || (nick && norm(nick) === a.first)) sc += 2;
+      else if (b.first && a.first && (b.first.startsWith(a.first) || a.first.startsWith(b.first))) sc += 1;
+      if (party && group(party) === group(p)) sc += 1;
+      if (sc > score) { score = sc; best = ko; }
+    }
+    const out = score >= 4 ? best : en;
+    if (hnames[id]) koCache.set(k, out);
+    return out;
+  }
 
   function merge(r, L) {
     const cands = r.candidates.map(c => ({ ...c, votes: 0, pct: 0, fw: false }));
@@ -320,7 +345,7 @@
       const s = district(id);
       h = `<div class="tt">${distName(id)}</div>`;
       if (s.L && s.L.cands) {
-        const cs = s.L.cands.map(c => ({ ...c, name: c.en }));
+        const cs = s.L.cands.map(c => ({ ...c, name: hName(id, c.en, c.party) }));
         h += tipRows(cs, s.status === 'called' ? cs.findIndex(c => c.winner) : -1);
         h += `<div class="ts">${s.status === 'called' ? '당선 확정' : s.status === 'counting' ? '개표 중' : '개표 전'}${s.L.reporting ? ` · 개표율 ${Math.round(s.L.reporting)}%` : ''}</div>`;
       } else h += '<div class="ts">개표 전</div>';
@@ -482,7 +507,7 @@
   }
   const OFFICE = { senate: '상원', governor: '주지사', house: '하원' };
   function callText(c) {
-    if (c.v === 'house') return { where: `${distName(c.id)} 하원`, who: esc(c.s.w.en), party: group(c.s.w.party), flip: false, house: true };
+    if (c.v === 'house') return { where: `${distName(c.id)} 하원`, who: esc(hName(c.id, c.s.w.en, c.s.w.party)), party: group(c.s.w.party), flip: false, house: true };
     const cand = c.r.candidates[c.s.idx];
     return { where: `${geo.states[c.r.state].ko} ${OFFICE[c.v]}`, who: esc(cand.name), party: group(cand.party), flip: group(cand.party) !== c.r.incumbentParty, from: c.r.incumbentParty };
   }
@@ -614,7 +639,7 @@
       const win = i === winIdx;
       const col = P(group(c.party)).c;
       return `<div class="cand${win ? ' win' : ''}"><span class="sw" style="background:${col}"></span>
-        <div class="nm">${esc(c.name || c.en)}<span class="pp">${P(c.party).ko}</span>${c.inc ? '<span class="inc">현직</span>' : ''}${win ? '<span class="chk">당선</span>' : ''}</div>
+        <div class="nm">${esc(c.name || c.en)}<span class="pp">${P(c.party).ko}</span>${c.inc ? '<span class="inc">현직</span>' : ''}${win ? '<span class="chk">당선</span>' : ''}${c.sub && c.sub !== c.name ? `<span class="en">${esc(c.sub)}</span>` : ''}</div>
         <div class="pc">${pct(c.pct)}${c.votes ? `<small>${c.votes.toLocaleString('ko-KR')}표</small>` : ''}</div>
         <div class="track"><span style="width:${Math.min(100, +c.pct || 0)}%;background:${col}"></span></div></div>`;
     }).join('') || '<div class="dt-empty">후보 정보가 아직 없습니다</div>';
@@ -625,7 +650,7 @@
       const st = d.id.split('-')[0];
       const s = district(d.id);
       const L = s.L;
-      const cands = L && L.cands ? L.cands.map(c => ({ ...c, name: c.en })) : [];
+      const cands = L && L.cands ? L.cands.map(c => ({ ...c, name: hName(d.id, c.en, c.party), sub: c.en })) : [];
       const winIdx = s.status === 'called' ? cands.findIndex(c => c.winner) : -1;
       const total = cands.reduce((a, c) => a + (c.votes || 0), 0);
       const sorted = [...cands].sort((a, b) => b.pct - a.pct);
@@ -755,11 +780,12 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611031724').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031724').then(r => r.json()),
+    fetch('data/states.json?v=202611031733').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031733').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
+    fetch('data/house-names.json?v=20261103173302611031733').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);

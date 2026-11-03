@@ -268,3 +268,6 @@ body.noscroll{overflow:hidden}
   .dt-stats div:nth-child(2){border-right:0}
   .dt-stats div:nth-child(-n+2){border-bottom:1px solid var(--line)}
 }
+
+.detail-card .cand .nm{flex-wrap:wrap}
+.cand .nm .en{flex-basis:100%;font-size:11px;font-weight:500;color:var(--ink3);margin-top:-2px}
