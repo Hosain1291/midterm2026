@@ -37,9 +37,10 @@ a{color:inherit}
 .title h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
 .title .sub{font-size:12px;color:#9fb0cc;font-weight:600;letter-spacing:.02em}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.clocks{display:flex;gap:18px}
 .clock{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
-.clock b{font-family:var(--num);font-size:28px;font-weight:700;letter-spacing:.02em}
-.clock span{font-size:11px;color:#9fb0cc;margin-top:2px}
+.clock b{font-family:var(--num);font-size:28px;font-weight:700;letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.clock span{font-size:11px;color:#9fb0cc;margin-bottom:3px;font-weight:700}
 .theme{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer}
 .theme:hover{background:rgba(255,255,255,.14)}
 [data-theme=dark] .i-sun,[data-theme=light] .i-moon{display:none}
@@ -199,10 +200,12 @@ h2::before{content:"";width:4px;height:16px;background:var(--accent);display:inl
   .flag{height:32px}
   .flag-live{font-size:15px;padding:0 7px}
   .flag-txt{display:none}
-  .title h1{font-size:17px}
+  .title{min-width:0}
+  .title h1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .title .sub{display:none}
-  .clock b{font-size:20px}
-  .clock span{display:none}
+  .clocks{gap:10px}
+  .clock b{font-size:17px;min-width:62px}
+  .clock span{font-size:9px}
   .theme{width:32px;height:32px}
   .tabs a{padding:7px 12px;font-size:14px}
   .tabs a small{display:none}

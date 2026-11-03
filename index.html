@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=202611031814">
+<link rel="stylesheet" href="style.css?v=202611031933">
 </head>
 <body>
 <header class="top">
@@ -30,7 +30,10 @@
       <span class="sub">상원 · 하원 · 주지사</span>
     </div>
     <div class="top-right">
-      <div class="clock"><b id="clock">--:--</b><span>한국시간</span></div>
+      <div class="clocks">
+        <div class="clock"><span>서울</span><b id="clkSeoul">--:--:--</b></div>
+        <div class="clock"><span>워싱턴 D.C.</span><b id="clkDC">--:--:--</b></div>
+      </div>
       <button class="theme" id="themeBtn" aria-label="라이트/다크 전환" title="라이트/다크 전환">
         <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
         <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
@@ -104,6 +107,6 @@
   <div class="ticker-track"><div class="ticker-move" id="tickerMove">2026 미국 중간선거 개표 특보</div></div>
 </div>
 
-<script src="app.js?v=202611031814"></script>
+<script src="app.js?v=202611031933"></script>
 </body>
 </html>

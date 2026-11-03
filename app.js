@@ -28,9 +28,12 @@
     try { localStorage.setItem('theme', t); } catch (e) {}
   });
   const tickClock = () => {
-    $('clock').textContent = new Date().toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false });
+    const o = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const now = new Date();
+    $('clkSeoul').textContent = now.toLocaleTimeString('ko-KR', { ...o, timeZone: 'Asia/Seoul' });
+    $('clkDC').textContent = now.toLocaleTimeString('ko-KR', { ...o, timeZone: 'America/New_York' });
   };
-  tickClock(); setInterval(tickClock, 10000);
+  tickClock(); setInterval(tickClock, 1000);
 
   /* =========================================================
      데이터: 기본 정보 + 실시간 피드
@@ -851,13 +854,13 @@
   window.addEventListener('hashchange', route);
 
   Promise.all([
-    fetch('data/states.json?v=202611031814').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031814').then(r => r.json()),
+    fetch('data/states.json?v=202611031933').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611031933').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611031814').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611031933').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);
