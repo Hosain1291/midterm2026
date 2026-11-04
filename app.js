@@ -59,8 +59,8 @@
   const API = () => data.source.base;
   function partyCode(p) {
     const s = String(p || '').toLowerCase();
-    if (s.startsWith('democrat') || s === 'dfl' || s.includes('farmer-labor')) return 'D';
-    if (s.startsWith('republican')) return 'R';
+    if (s.startsWith('democrat') || s === 'd' || s === 'dem' || s === 'dfl' || s.includes('farmer-labor')) return 'D';
+    if (s.startsWith('republican') || s === 'r' || s === 'rep' || s === 'gop') return 'R';
     if (s.startsWith('libertarian')) return 'L';
     if (s.startsWith('green')) return 'G';
     return 'I';
@@ -92,6 +92,7 @@
   }
   // 주지사 36곳: 먼저 검색 한 번으로 전부 받고(요청 1번), 빠진 주만 하나씩 받음
   const detailAt = {};
+  const viaDetail = new Set();   // 검색엔 숫자가 없어서 개별 요청으로 숫자를 받는 주
   // 주 표기가 'PA'든 'Pennsylvania'든 두 글자 코드로
   function stCode(v) {
     const t = String(v || '').trim();
@@ -104,7 +105,7 @@
     const list = data.governor.races;
     const dt = data.source.electionDate;
     const out = { ...civ.governor };
-    const got = new Set();
+    const got = new Set(), searchHadVotes = new Set();
     try {
       const s = await getJSON(`${API()}/race/search?country=US&startDate=${dt}&endDate=${dt}&query=Governor&limit=500`);
       for (const x of s.races || []) {
@@ -115,7 +116,11 @@
         if (!r.civicId) r.civicId = x.id;
         if (x.id !== r.civicId && got.has(st)) continue;
         stamp(x);
-        out[st] = feedRace(x);
+        const fr = feedRace(x);
+        // 검색 결과에 득표수가 비어 있으면, 개별 요청으로 받아 둔 숫자를 지우지 않음
+        if (fr.total > 0) { searchHadVotes.add(st); viaDetail.delete(st); }
+        if (fr.total > 0 || !(out[st] && out[st].total > 0)) out[st] = fr;
+        else viaDetail.add(st);
         got.add(st);
       }
     } catch (e) {}
@@ -125,6 +130,7 @@
     const rest = list.filter(r => {
       if (!got.has(r.state) && !(out[r.state] && out[r.state].total > 0)) return true;   // 아직 못 받은 주는 매번 시도
       if (!got.has(r.state)) return now - (detailAt[r.state] || 0) > 25000;
+      if (viaDetail.has(r.state)) return now - (detailAt[r.state] || 0) > 25000;
       if (!(out[r.state] && out[r.state].total > 0)) return now - (detailAt[r.state] || 0) > 120000;
       return false;
     });
@@ -143,7 +149,9 @@
           detailAt[r.state] = Date.now();      // 성공했을 때만 기록 → 실패한 주는 다음 30초에 다시 시도
           if (d.test_data) continue;   // 시험 데이터인 경합만 건너뜀 (사이트 전체를 막지 않음)
           stamp(d);
-          out[r.state] = feedRace(d);
+          const fd = feedRace(d);
+          if (fd.total > 0 || !(out[r.state] && out[r.state].total > 0)) out[r.state] = fd;
+          if (fd.total > 0 && !searchHadVotes.has(r.state)) viaDetail.add(r.state);
         } catch (e) {}
       }
     }
@@ -1025,13 +1033,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041059').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041059').then(r => r.json()),
+    fetch('data/states.json?v=202611041107').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041107').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041059').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041107').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
