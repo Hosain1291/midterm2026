@@ -88,28 +88,47 @@
     for (const [k, reg] of Object.entries(d.region_results || {})) out[k.toUpperCase()] = feedRace(reg);
     civ.house = out;
   }
+  // 주지사 36곳: 먼저 검색 한 번으로 전부 받고(요청 1번), 빠진 주만 하나씩 받음
+  const isGovName = n => /governor/i.test(n || '') && !/lieut|primary|runoff/i.test(n || '');
   async function civicGovernors() {
     const list = data.governor.races;
     const dt = data.source.electionDate;
-    let i = 0;
     const out = { ...civ.governor };
+    const got = new Set();
+    try {
+      const s = await getJSON(`${API()}/race/search?country=US&startDate=${dt}&endDate=${dt}&query=Governor&limit=500`);
+      for (const x of s.races || []) {
+        if (!isGovName(x.election_name) || x.test_data) continue;
+        const st = String(x.province || '').toUpperCase();
+        const r = list.find(q => q.state === st);
+        if (!r) continue;
+        if (!r.civicId) r.civicId = x.id;
+        if (x.id !== r.civicId && got.has(st)) continue;
+        stamp(x);
+        out[st] = feedRace(x);
+        got.add(st);
+      }
+    } catch (e) {}
+    // 검색 결과에 없거나 후보가 비어 있는 주는 개별 요청 (동시에 4개씩)
+    const rest = list.filter(r => !got.has(r.state) || !(out[r.state] && out[r.state].total > 0));
+    let i = 0;
     async function worker() {
-      while (i < list.length) {
-        const r = list[i++];
+      while (i < rest.length) {
+        const r = rest[i++];
         try {
           if (!r.civicId) {
             const s = await getJSON(`${API()}/race/search?country=US&province=${r.state}&startDate=${dt}&endDate=${dt}&query=Governor&limit=25`);
-            const hit = (s.races || []).find(x => /governor/i.test(x.election_name || '') && !/lieut|primary/i.test(x.election_name || ''));
+            const hit = (s.races || []).find(x => isGovName(x.election_name));
             if (hit) r.civicId = hit.id; else continue;
           }
           const d = await getJSON(API() + '/race/' + r.civicId);
+          if (d.test_data) continue;   // 시험 데이터인 경합만 건너뜀 (사이트 전체를 막지 않음)
           stamp(d);
           out[r.state] = feedRace(d);
-          if (d.test_data) civ.test = true;
         } catch (e) {}
       }
     }
-    await Promise.all([1, 2, 3, 4, 5, 6].map(worker));
+    await Promise.all([1, 2, 3, 4].map(worker));
     civ.governor = out;
     live.govAt = Date.now();
   }
@@ -919,13 +938,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041013').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041013').then(r => r.json()),
+    fetch('data/states.json?v=202611041021').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041021').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041013').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041021').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
