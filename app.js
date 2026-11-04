@@ -115,7 +115,8 @@
   }
   async function loadCivic() {
     const jobs = [civicSenate(), civicHouse()];
-    if ((view === 'governor' && Date.now() - live.govAt > 15000) || Date.now() - live.govAt > 300000) jobs.push(civicGovernors());
+    // 어느 탭을 보든 상원·하원·주지사 전부 계속 받음 (주지사는 36곳이라 15초마다)
+    if (Date.now() - live.govAt > 15000) jobs.push(civicGovernors());
     const res = await Promise.allSettled(jobs);
     if (!res.some(x => x.status === 'fulfilled')) return false;
     Object.assign(live, { src: 'civic', senate: civ.senate, governor: civ.governor, house: civ.house, test: civ.test, rehearsal: false, updated: civicUpdated, attribution: 'civicAPI', page: 'https://civicapi.org' });
@@ -832,7 +833,6 @@
     $('tip').hidden = true;
     closeDetail();
     render();
-    if (view === 'governor' && data && Date.now() - live.govAt > 15000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
   }
   $('filters').addEventListener('click', e => {
     const b = e.target.closest('button');
@@ -919,16 +919,20 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041006').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041006').then(r => r.json()),
+    fetch('data/states.json?v=202611041013').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041013').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041006').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041013').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
+    // 다른 탭·앱에 갔다 오면 (브라우저가 그동안 갱신을 늦췄을 수 있으니) 바로 다시 받음
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+    addEventListener('focus', () => refresh());
+    addEventListener('online', () => refresh());
     setInterval(loadBase, 300000);
   });
 })();
