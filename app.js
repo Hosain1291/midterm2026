@@ -47,7 +47,7 @@
   }
   async function getJSON(url, opt = {}) {
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 20000);
+    const t = setTimeout(() => ctl.abort(), 12000);
     try {
       const r = await fetch(url, { ...opt, signal: ctl.signal, cache: 'no-store' });
       if (!r.ok) { const e = new Error(r.status); e.status = r.status; throw e; }
@@ -66,9 +66,11 @@
     return 'I';
   }
   function feedRace(o) {
-    const cs = (o.candidates || []).map(c => ({ en: String(c.name || '').replace(/\s+/g, ' ').trim(), party: partyCode(c.party), votes: +c.votes || 0, winner: !!c.winner }));
-    const total = cs.reduce((a, c) => a + c.votes, 0);
-    cs.forEach(c => { c.pct = total ? c.votes / total * 100 : 0; });
+    const cs = (o.candidates || []).map(c => ({ en: String(c.name || '').replace(/\s+/g, ' ').trim(), party: partyCode(c.party), votes: +c.votes || 0, p0: +c.percent || 0, winner: !!c.winner }));
+    let total = cs.reduce((a, c) => a + c.votes, 0);
+    // 득표수가 없고 득표율만 오는 경우도 받기
+    if (!total && cs.some(c => c.p0 > 0)) { cs.forEach(c => { c.pct = c.p0; }); total = 1; }
+    else cs.forEach(c => { c.pct = total ? c.votes / total * 100 : 0; });
     return { reporting: +o.percent_reporting || 0, cands: cs, total };
   }
   let civicUpdated = null;
@@ -90,6 +92,13 @@
   }
   // 주지사 36곳: 먼저 검색 한 번으로 전부 받고(요청 1번), 빠진 주만 하나씩 받음
   const detailAt = {};
+  // 주 표기가 'PA'든 'Pennsylvania'든 두 글자 코드로
+  function stCode(v) {
+    const t = String(v || '').trim();
+    if (t.length === 2) return t.toUpperCase();
+    const hit = Object.entries(geo.states).find(([ab, s]) => s.en.toLowerCase() === t.toLowerCase());
+    return hit ? hit[0] : t.toUpperCase();
+  }
   const isGovName = n => /governor/i.test(n || '') && !/lieut|primary|runoff/i.test(n || '');
   async function civicGovernors() {
     const list = data.governor.races;
@@ -100,7 +109,7 @@
       const s = await getJSON(`${API()}/race/search?country=US&startDate=${dt}&endDate=${dt}&query=Governor&limit=500`);
       for (const x of s.races || []) {
         if (!isGovName(x.election_name) || x.test_data) continue;
-        const st = String(x.province || '').toUpperCase();
+        const st = stCode(x.province);
         const r = list.find(q => q.state === st);
         if (!r) continue;
         if (!r.civicId) r.civicId = x.id;
@@ -114,11 +123,12 @@
     // 개별 요청은 최소한으로: 검색에 아예 없는 주만 바로, 검색엔 있는데 아직 0표인 주는 2분에 한 번만
     const now = Date.now();
     const rest = list.filter(r => {
-      if (!got.has(r.state)) return now - (detailAt[r.state] || 0) > 15000;
+      if (!got.has(r.state) && !(out[r.state] && out[r.state].total > 0)) return true;   // 아직 못 받은 주는 매번 시도
+      if (!got.has(r.state)) return now - (detailAt[r.state] || 0) > 25000;
       if (!(out[r.state] && out[r.state].total > 0)) return now - (detailAt[r.state] || 0) > 120000;
       return false;
     });
-    rest.forEach(r => { detailAt[r.state] = now; });
+
     let i = 0;
     async function worker() {
       while (i < rest.length) {
@@ -130,13 +140,14 @@
             if (hit) r.civicId = hit.id; else continue;
           }
           const d = await getJSON(API() + '/race/' + r.civicId);
+          detailAt[r.state] = Date.now();      // 성공했을 때만 기록 → 실패한 주는 다음 30초에 다시 시도
           if (d.test_data) continue;   // 시험 데이터인 경합만 건너뜀 (사이트 전체를 막지 않음)
           stamp(d);
           out[r.state] = feedRace(d);
         } catch (e) {}
       }
     }
-    await Promise.all((live.govAt ? [1, 2] : [1, 2, 3, 4, 5, 6]).map(worker));
+    await Promise.all([1, 2, 3].map(worker));
     civ.governor = out;
     live.govAt = Date.now();
   }
@@ -146,11 +157,17 @@
     setStatus();
     paintIfChanged();
   }
+  // 주지사는 따로 돌림: 주지사 요청이 늦어져도 상원·하원 갱신을 막지 않게
+  let govBusy = false;
+  function loadGovernorsBg() {
+    if (govBusy || Date.now() - live.govAt < 15000) return;
+    govBusy = true;
+    civicGovernors().then(applyCivic).catch(() => {}).finally(() => { govBusy = false; });
+  }
   async function loadCivic() {
     // 어느 탭을 보든 상원·하원·주지사 전부 30초마다 받음
-    const jobs = [civicSenate().then(applyCivic), civicHouse().then(applyCivic)];
-    if (Date.now() - live.govAt > 15000) jobs.push(civicGovernors().then(applyCivic));
-    const res = await Promise.allSettled(jobs);
+    loadGovernorsBg();
+    const res = await Promise.allSettled([civicSenate().then(applyCivic), civicHouse().then(applyCivic)]);
     return res.some(x => x.status === 'fulfilled');
   }
 
@@ -687,6 +704,7 @@
   function statusText(r, s) {
     if (s.status === 'called') return '당선 확정';
     if (s.status === 'counting') return '개표 중';
+    if (r.office && live.ok && !(live[r.office] || {})[r.state]) return '데이터 수신 대기';
     return '개표 전';
   }
   function raceCard(r) {
@@ -953,13 +971,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041028').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041028').then(r => r.json()),
+    fetch('data/states.json?v=202611041035').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041035').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041028').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041035').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
