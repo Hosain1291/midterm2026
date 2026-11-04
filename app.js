@@ -873,6 +873,35 @@
   window.addEventListener('hashchange', route);
 
   /* =========================================================
+     사이트 새 버전 자동 반영 (자동 새로고침)
+     1분마다 이 페이지 파일을 다시 받아, 새로 올린 버전이면 스스로 새로고침.
+     보던 탭(상원·하원·주지사)·스크롤 위치·필터·검색어는 그대로 이어짐.
+     ========================================================= */
+  let pageSig = null;
+  const sigOf = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return h + ':' + t.length; };
+  async function checkNewVersion() {
+    try {
+      const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return;
+      const sg = sigOf(await r.text());
+      if (pageSig === null) { pageSig = sg; return; }
+      if (sg === pageSig || detailOpen || document.activeElement === $('search')) return; // 결과 창·검색 중엔 다음 확인 때
+      try { sessionStorage.setItem('mt2026-view', JSON.stringify({ y: window.scrollY, filter, query })); } catch (e) {}
+      location.reload();
+    } catch (e) {}
+  }
+  function restoreView() {
+    let st = null;
+    try { st = JSON.parse(sessionStorage.getItem('mt2026-view') || 'null'); sessionStorage.removeItem('mt2026-view'); } catch (e) {}
+    if (!st) return;
+    if (st.filter) { filter = st.filter; document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter)); }
+    if (st.query) { query = st.query; $('search').value = st.query; }
+    renderGrid();
+    requestAnimationFrame(() => window.scrollTo(0, st.y || 0));
+  }
+  checkNewVersion(); setInterval(checkNewVersion, 60 * 1000);
+
+  /* =========================================================
      화면 꺼짐 방지 (Screen Wake Lock)
      페이지를 보고 있는 동안 컴퓨터·휴대폰 화면이 자동으로 꺼지지 않게 함.
      다른 탭으로 가면 브라우저가 풀어 버리므로 돌아올 때 다시 요청. 일부 브라우저는 화면을 한 번 눌러야 켜짐.
@@ -890,15 +919,15 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611040939').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611040939').then(r => r.json()),
+    fetch('data/states.json?v=202611041006').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041006').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611040939').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041006').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
-    refresh();
+    refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
     setInterval(loadBase, 300000);
   });
