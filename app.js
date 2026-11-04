@@ -78,17 +78,17 @@
   const civ = { senate: {}, governor: {}, house: {}, test: false };
   async function civicSenate() {
     const d = await getJSON(API() + '/race/' + data.source.senateAggregate);
-    // 시험 데이터(test_data)면 상원만 비워 둠 — 다른 선거는 그대로 실제 데이터 표시
+    // 개표 당일이므로 test_data 표시와 상관없이 실제 피드를 그대로 씀
     civ.test = false; stamp(d);
     const out = {};
-    if (!d.test_data) for (const [k, reg] of Object.entries(d.region_results || {})) if (!reg.test_data) out[k.slice(0, 2).toUpperCase()] = feedRace(reg);
+    for (const [k, reg] of Object.entries(d.region_results || {})) out[k.slice(0, 2).toUpperCase()] = feedRace(reg);
     civ.senate = out;
   }
   async function civicHouse() {
     const d = await getJSON(API() + '/race/' + data.source.houseAggregate);
     stamp(d);
     const out = {};
-    if (!d.test_data) for (const [k, reg] of Object.entries(d.region_results || {})) if (!reg.test_data) out[k.toUpperCase()] = feedRace(reg);
+    for (const [k, reg] of Object.entries(d.region_results || {})) out[k.toUpperCase()] = feedRace(reg);
     civ.house = out;
   }
   // 주지사 36곳: 원래 방식 — 주마다 /race/{id} JSON을 하나씩 받음 (동시에 4개씩)
@@ -108,7 +108,6 @@
             if (hit) r.civicId = hit.id; else continue;
           }
           const d = await getJSON(API() + '/race/' + r.civicId);
-          if (d.test_data) continue;   // 시험 데이터인 경합만 건너뜀 (사이트 전체를 막지 않음)
           stamp(d);
           out[r.state] = feedRace(d);
         } catch (e) {}
@@ -992,13 +991,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041130').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041130').then(r => r.json()),
+    fetch('data/states.json?v=202611041152').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041152').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041130').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041152').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
