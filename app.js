@@ -89,6 +89,7 @@
     stamp(d);
     const out = {};
     for (const [k, reg] of Object.entries(d.region_results || {})) out[k.toUpperCase()] = feedRace(reg);
+    fixHouseParties(out);
     civ.house = out;
   }
   // 주지사 36곳: 원래 방식 — 주마다 /race/{id} JSON을 하나씩 받음 (동시에 4개씩)
@@ -107,13 +108,29 @@
             const hit = (s.races || []).find(x => isGovName(x.election_name));
             if (hit) r.civicId = hit.id; else continue;
           }
-          const d = await getJSON(API() + '/race/' + r.civicId);
+          let d;
+          try { d = await getJSON(API() + '/race/' + r.civicId); }
+          catch (e) { await new Promise(x => setTimeout(x, 400)); d = await getJSON(API() + '/race/' + r.civicId); } // 한 번 더
           stamp(d);
           out[r.state] = feedRace(d);
+          okN++;
         } catch (e) {}
       }
     }
-    await Promise.all([1, 2, 3, 4].map(worker));
+    let okN = 0;
+    await Promise.all([1, 2, 3].map(worker));
+    // 주마다 받기가 대부분 실패하면(요청 제한 등) 검색 한 번으로 받아서 채움
+    if (okN < list.length / 2) {
+      try {
+        const s = await getJSON(`${API()}/race/search?country=US&startDate=${dt}&endDate=${dt}&query=Governor&limit=500`);
+        for (const x of s.races || []) {
+          if (!isGovName(x.election_name)) continue;
+          const st = String(x.province || '').toUpperCase();
+          const fr = feedRace(x);
+          if (list.some(q => q.state === st) && (fr.total > 0 || !out[st])) out[st] = fr;
+        }
+      } catch (e) {}
+    }
     civ.governor = out;
     live.govAt = Date.now();
   }
@@ -200,6 +217,34 @@
   // 하원 후보 한국어 이름: 같은 선거구에서 성(+이름·정당)으로 짝 맞춤
   const koCache = new Map();
   function hName(id, en, party) { return koName(hnames[id], id, en, party); }
+  // 명단에서 같은 후보 찾기 → [영문, 한글, 정당] 또는 null
+  function findEntry(list, en, party) {
+    const a = parts(en);
+    let best = null, score = 0;
+    for (const row of list || []) {
+      const e = row[0];
+      const b = parts(e.replace(/"[^"]*"/g, ' '));
+      const nick = (e.match(/"([^"]+)"/) || [])[1];
+      let sc = 0;
+      if (a.full === b.full) sc += 10;
+      if (a.last === b.last) sc += 4;
+      if (b.full === b.last && a.last === b.last) sc += 1;
+      if (a.first === b.first || (nick && norm(nick) === a.first)) sc += 2;
+      else if (b.first && a.first && (b.first.startsWith(a.first) || a.first.startsWith(b.first))) sc += 1;
+      if (party && group(party) === group(row[2])) sc += 1;
+      if (sc > score) { score = sc; best = row; }
+    }
+    return score >= 4 ? best : null;
+  }
+  // 하원: 피드의 정당 표기가 틀리게 오는 경우가 있어, 공식 후보 명단의 민주·공화 표기로 바로잡음
+  function fixHouseParties(house) {
+    for (const [id, L] of Object.entries(house)) {
+      for (const c of L.cands || []) {
+        const m = findEntry(hnames[id], c.en, null);
+        if (m && (m[2] === 'D' || m[2] === 'R')) c.party = m[2];
+      }
+    }
+  }
   function koName(list0, id, en, party) {
     const k = id + '|' + en;
     if (koCache.has(k)) return koCache.get(k);
@@ -991,13 +1036,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041152').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041152').then(r => r.json()),
+    fetch('data/states.json?v=202611041237').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041237').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041152').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041237').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
