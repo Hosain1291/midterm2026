@@ -157,17 +157,24 @@
     setStatus();
     paintIfChanged();
   }
+  // 상원·하원·주지사 각각의 연결 상태 (마지막 성공 시각, 실패 여부)
+  const conn = { senate: { at: 0, fail: false }, house: { at: 0, fail: false }, governor: { at: 0, fail: false, n: 0 } };
+  const mark = (k, ok) => { if (ok) { conn[k].at = Date.now(); conn[k].fail = false; } else conn[k].fail = true; setStatus(); };
   // 주지사는 따로 돌림: 주지사 요청이 늦어져도 상원·하원 갱신을 막지 않게
   let govBusy = false;
   function loadGovernorsBg() {
     if (govBusy || Date.now() - live.govAt < 15000) return;
     govBusy = true;
-    civicGovernors().then(applyCivic).catch(() => {}).finally(() => { govBusy = false; });
+    civicGovernors().then(() => { conn.governor.n = Object.values(civ.governor).filter(g => g.cands && g.cands.length).length; mark('governor', conn.governor.n > 0); applyCivic(); })
+      .catch(() => mark('governor', false)).finally(() => { govBusy = false; });
   }
   async function loadCivic() {
     // 어느 탭을 보든 상원·하원·주지사 전부 30초마다 받음
     loadGovernorsBg();
-    const res = await Promise.allSettled([civicSenate().then(applyCivic), civicHouse().then(applyCivic)]);
+    const res = await Promise.allSettled([
+      civicSenate().then(() => { mark('senate', true); applyCivic(); }, e => { mark('senate', false); throw e; }),
+      civicHouse().then(() => { mark('house', true); applyCivic(); }, e => { mark('house', false); throw e; }),
+    ]);
     return res.some(x => x.status === 'fulfilled');
   }
 
@@ -194,7 +201,19 @@
   }
 
   const fmtTime = iso => new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  function connHTML() {
+    const now = Date.now();
+    return [['senate', '상원'], ['house', '하원'], ['governor', '주지사']].map(([k, ko]) => {
+      const c = conn[k];
+      const age = c.at ? Math.round((now - c.at) / 1000) : null;
+      const st = !c.at ? (c.fail ? 'bad' : 'wait') : c.fail || age > 120 ? 'warn' : 'ok';
+      const tip = !c.at ? (c.fail ? '연결 실패 · 다시 시도 중' : '연결 중') : `마지막 수신 ${age}초 전${c.fail ? ' · 최근 시도 실패' : ''}${k === 'governor' ? ` · ${c.n}/36곳` : ''}`;
+      return `<span class="cn ${st}" title="${ko} ${tip}"><i></i>${ko}${k === 'governor' && c.at && c.n < 36 ? `<small>${c.n}/36</small>` : ''}</span>`;
+    }).join('');
+  }
+  setInterval(() => { if (conn.senate.at || conn.house.at) $('conn').innerHTML = connHTML(); }, 5000);
   function setStatus() {
+    $('conn').innerHTML = connHTML();
     $('status').classList.toggle('stale', !live.ok);
     const name = 'civicAPI';
     let t;
@@ -1006,13 +1025,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041057').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041057').then(r => r.json()),
+    fetch('data/states.json?v=202611041059').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041059').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041057').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041059').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
