@@ -93,7 +93,18 @@
     civ.house = out;
   }
   // 주지사 36곳: 원래 방식 — 주마다 /race/{id} JSON을 하나씩 받음 (동시에 4개씩)
-  const isGovName = n => /governor/i.test(n || '') && !/lieut|primary|runoff/i.test(n || '');
+  const isGovName = n => /governor/i.test(n || '') && !/lieut|primary|runoff|council|question|measure|amendment|proposition|board|regent|college|university|district|county/i.test(n || '');
+  // 주민투표(찬성/반대) 같은 다른 선거가 섞여 들어오지 않게
+  const isBallot = o => (o.candidates || []).some(c => /^(yes|no|for|against)$/i.test(String(c.name || '').trim()));
+  const badIds = new Set(), foundId = {};
+  // 우리 후보 명단(공화·민주 후보)과 성이 하나라도 맞아야 진짜 그 주 주지사 선거로 인정
+  const hasOurCand = (o, r) => {
+    const cs = o.candidates || [];
+    if (!cs.length || !r) return true;
+    const lasts = new Set(r.candidates.map(c => parts(c.en).last));
+    return cs.some(c => lasts.has(parts(c.name).last));
+  };
+  const isGovRace = (o, r) => !isBallot(o) && (!o.election_name || isGovName(o.election_name)) && !badIds.has(o.id) && hasOurCand(o, r);
   async function civicGovernors() {
     const list = data.governor.races;
     const dt = data.source.electionDate;
@@ -103,14 +114,18 @@
       while (i < list.length) {
         const r = list[i++];
         try {
+          if (foundId[r.state]) r.civicId = foundId[r.state];
+          if (r.civicId && badIds.has(r.civicId)) r.civicId = null;
           if (!r.civicId) {
             const s = await getJSON(`${API()}/race/search?country=US&province=${r.state}&startDate=${dt}&endDate=${dt}&query=Governor&limit=25`);
-            const hit = (s.races || []).find(x => isGovName(x.election_name));
-            if (hit) r.civicId = hit.id; else continue;
+            const hit = (s.races || []).find(x => isGovName(x.election_name) && isGovRace(x, r));
+            if (hit) { r.civicId = hit.id; foundId[r.state] = hit.id; } else continue;
           }
           let d;
           try { d = await getJSON(API() + '/race/' + r.civicId); }
           catch (e) { await new Promise(x => setTimeout(x, 400)); d = await getJSON(API() + '/race/' + r.civicId); } // 한 번 더
+          // 받은 게 주지사 선거가 아니면(예: 주민투표) 버리고, 다음엔 그 주 주지사를 다시 찾음
+          if (!isGovRace({ ...d, id: r.civicId }, r)) { badIds.add(r.civicId); delete foundId[r.state]; r.civicId = null; delete out[r.state]; continue; }
           stamp(d);
           out[r.state] = feedRace(d);
           okN++;
@@ -124,8 +139,8 @@
       try {
         const s = await getJSON(`${API()}/race/search?country=US&startDate=${dt}&endDate=${dt}&query=Governor&limit=500`);
         for (const x of s.races || []) {
-          if (!isGovName(x.election_name)) continue;
           const st = String(x.province || '').toUpperCase();
+          if (!isGovName(x.election_name) || !isGovRace(x, list.find(q => q.state === st))) continue;
           const fr = feedRace(x);
           if (list.some(q => q.state === st) && (fr.total > 0 || !out[st])) out[st] = fr;
         }
@@ -1038,13 +1053,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041243').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041243').then(r => r.json()),
+    fetch('data/states.json?v=202611041246').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041246').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041243').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041246').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
