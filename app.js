@@ -136,18 +136,22 @@
         } catch (e) {}
       }
     }
-    await Promise.all([1, 2].map(worker));
+    await Promise.all((live.govAt ? [1, 2] : [1, 2, 3, 4, 5, 6]).map(worker));
     civ.governor = out;
     live.govAt = Date.now();
   }
+  // 받은 것부터 바로 화면에 반영 (상원·하원·주지사 중 먼저 도착한 것부터)
+  function applyCivic() {
+    Object.assign(live, { src: 'civic', ok: true, senate: civ.senate, governor: civ.governor, house: civ.house, test: civ.test, rehearsal: false, updated: civicUpdated, attribution: 'civicAPI', page: 'https://civicapi.org' });
+    setStatus();
+    paintIfChanged();
+  }
   async function loadCivic() {
-    const jobs = [civicSenate(), civicHouse()];
     // 어느 탭을 보든 상원·하원·주지사 전부 30초마다 받음
-    if (Date.now() - live.govAt > 15000) jobs.push(civicGovernors());
+    const jobs = [civicSenate().then(applyCivic), civicHouse().then(applyCivic)];
+    if (Date.now() - live.govAt > 15000) jobs.push(civicGovernors().then(applyCivic));
     const res = await Promise.allSettled(jobs);
-    if (!res.some(x => x.status === 'fulfilled')) return false;
-    Object.assign(live, { src: 'civic', senate: civ.senate, governor: civ.governor, house: civ.house, test: civ.test, rehearsal: false, updated: civicUpdated, attribution: 'civicAPI', page: 'https://civicapi.org' });
-    return true;
+    return res.some(x => x.status === 'fulfilled');
   }
 
   let refreshing = false;
@@ -162,7 +166,10 @@
     try { ok = await loadCivic(); } catch (e) {}
     live.ok = ok;
     setStatus();
-    // 숫자가 그대로면 화면을 다시 그리지 않음 (5초마다 깜빡임 방지)
+    paintIfChanged();
+  }
+  // 숫자가 그대로면 화면을 다시 그리지 않음 (깜빡임 방지)
+  function paintIfChanged() {
     const sig = JSON.stringify([live.test, live.senate, live.governor, live.house, data.notice]);
     if (sig === lastSig) return;
     lastSig = sig;
@@ -946,13 +953,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041025').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041025').then(r => r.json()),
+    fetch('data/states.json?v=202611041028').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041028').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041025').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041028').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
