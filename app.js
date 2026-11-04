@@ -45,9 +45,9 @@
       if (r.ok) data = await r.json();
     } catch (e) {}
   }
-  async function getJSON(url, opt = {}) {
+  async function getJSON(url, opt = {}, ms = 30000) {
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 12000);
+    const t = setTimeout(() => ctl.abort(), ms);
     try {
       const r = await fetch(url, { ...opt, signal: ctl.signal, cache: 'no-store' });
       if (!r.ok) { const e = new Error(r.status); e.status = r.status; throw e; }
@@ -77,7 +77,7 @@
   const stamp = d => { if (d && d.last_updated && (!civicUpdated || d.last_updated > civicUpdated)) civicUpdated = d.last_updated; };
   const civ = { senate: {}, governor: {}, house: {}, test: false };
   async function civicSenate() {
-    const d = await getJSON(API() + '/race/' + data.source.senateAggregate);
+    const d = await getJSON(API() + '/race/' + data.source.senateAggregate, {}, 60000);
     // 개표 당일이므로 test_data 표시와 상관없이 실제 피드를 그대로 씀
     civ.test = false; stamp(d);
     const out = {};
@@ -85,7 +85,7 @@
     civ.senate = out;
   }
   async function civicHouse() {
-    const d = await getJSON(API() + '/race/' + data.source.houseAggregate);
+    const d = await getJSON(API() + '/race/' + data.source.houseAggregate, {}, 60000);
     stamp(d);
     const out = {};
     for (const [k, reg] of Object.entries(d.region_results || {})) out[k.toUpperCase()] = feedRace(reg);
@@ -118,7 +118,7 @@
       }
     }
     let okN = 0;
-    await Promise.all([1, 2, 3].map(worker));
+    await Promise.all([1, 2].map(worker));
     // 주마다 받기가 대부분 실패하면(요청 제한 등) 검색 한 번으로 받아서 채움
     if (okN < list.length / 2) {
       try {
@@ -153,11 +153,13 @@
   }
   async function loadCivic() {
     // 어느 탭을 보든 상원·하원·주지사 전부 30초마다 받음
-    loadGovernorsBg();
-    const res = await Promise.allSettled([
+    // 상원·하원을 먼저 요청하고, 주지사는 그다음에 (브라우저 동시 연결 수를 상원·하원이 먼저 쓰게)
+    const first = Promise.allSettled([
       civicSenate().then(() => { mark('senate', true); applyCivic(); }, e => { mark('senate', false); throw e; }),
       civicHouse().then(() => { mark('house', true); applyCivic(); }, e => { mark('house', false); throw e; }),
     ]);
+    setTimeout(loadGovernorsBg, 300);
+    const res = await first;
     return res.some(x => x.status === 'fulfilled');
   }
 
@@ -1036,13 +1038,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041237').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041237').then(r => r.json()),
+    fetch('data/states.json?v=202611041243').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041243').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041237').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041243').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
