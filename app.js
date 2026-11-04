@@ -293,7 +293,7 @@
 
   let mergedCache = {}, houseCache = null;
   function racesOf(v) {
-    if (v === 'house') return [];
+    if (v === 'house' || !data[v]) return [];
     if (!mergedCache[v]) mergedCache[v] = data[v].races.map(r => merge({ ...r, office: v }, live[v][r.state]));
     return mergedCache[v];
   }
@@ -347,8 +347,7 @@
   /* =========================================================
      지도
      ========================================================= */
-  function buildMap() {
-    const svg = $('map');
+  function buildMap(svg = $('map')) {
     let h = '';
     if (view === 'house') {
       const r = grid.r - 0.7;
@@ -385,9 +384,8 @@
     if (s.status === 'counting' && s.party) return P(group(s.party)).l;
     return 'var(--map-wait)';
   }
-  function paintMap() {
-    const svg = $('map');
-    if (svg.dataset.view !== view) buildMap();
+  function paintMap(svg = $('map')) {
+    if (svg.dataset.view !== view) buildMap(svg);
     if (view === 'house') {
       houseTally();
       svg.querySelectorAll('.cell').forEach(el => {
@@ -481,7 +479,8 @@
     return { won, lead, total: view === 'senate' ? 100 : 50, base, gain, called, flips };
   }
 
-  function renderBoard() {
+  function renderBoard() { $('board').innerHTML = boardHTML(false); }
+  function boardHTML(compact) {
     const t = tally();
     const goal = view === 'senate' ? 51 : view === 'house' ? 218 : null;
     const unit = view === 'governor' ? '명' : '석';
@@ -489,7 +488,7 @@
     const w = n => (n / t.total * 100) + '%';
     const und = Math.max(0, t.total - t.won.D - t.won.R - t.won.I - t.lead.D - t.lead.R - t.lead.I);
     const chg = p => (t.gain && t.gain[p] ? `<span class="chg">${t.gain[p] > 0 ? '+' : ''}${t.gain[p]}</span>` : '');
-    const sub = p => [view === 'senate' && p === 'D' ? '무소속 2 포함' : '', t.lead[p] ? `${t.lead[p]}${lu} 우세` : ''].filter(Boolean).join(' · ') || '&nbsp;';
+    const sub = p => [view === 'senate' && p === 'D' && !compact ? '무소속 2 포함' : '', t.lead[p] ? `${t.lead[p]}${lu} 우세` : ''].filter(Boolean).join(' · ') || '&nbsp;';
 
     let headline;
     if (view === 'senate') {
@@ -505,7 +504,7 @@
       headline = `36곳 중 ${t.called}곳 확정 · 정당 교체 ${t.flips}곳 · 선거 없는 14개 주(민주 6 · 공화 8) 포함`;
     }
 
-    $('board').innerHTML = `
+    return `
       <div class="board-row">
         <div class="tile D"><span class="big">${t.won.D}</span><div class="who"><b>민주당</b><span>${sub('D')}</span>${chg('D')}</div></div>
         <div class="mid">${goal ? `<span class="lab">과반</span><span class="val">${goal}</span>` : `<span class="lab">주지사</span><span class="val">50</span>`}
@@ -530,7 +529,7 @@
         <span><i style="background:var(--map-wait)"></i>미정</span>
         ${t.base ? `<span>선거 없는 ${view === 'senate' ? '의석' : '주'}: 민주 ${t.base.D} · 공화 ${t.base.R}</span>` : ''}
       </div>
-      ${partyTable(t)}
+      ${compact ? '' : partyTable(t)}
       <p class="headline"><span class="tag">${view === 'senate' ? '상원' : view === 'house' ? '하원' : '주지사'}</span>${headline}</p>`;
   }
 
@@ -820,7 +819,7 @@
         <div class="dt-seats">${seats}</div>`;
     }
     const st = d.st, g = geo.states[st];
-    const v = view === 'house' ? 'senate' : view;
+    const v = d.office || (view === 'house' || view === 'all' ? 'senate' : view);
     const r = racesOf(v).find(x => x.state === st);
     const head = `<div class="dt-head"><div><span class="dt-kicker">${OFF[v]}${r && r.label ? ' · ' + r.label : ''} · ${g.en}</span><h3>${g.ko}</h3></div><button class="dt-x" data-close aria-label="닫기">✕</button></div>`;
     if (!r) return head + `<div class="dt-empty">${g.ko}에는 이번에 ${OFF[v]} 선거가 없습니다.</div>`;
@@ -855,6 +854,36 @@
     document.querySelectorAll('#map .sel').forEach(x => x.classList.remove('sel'));
   }
 
+  /* =========================================================
+     전체 보기: 상원 · 하원 · 주지사를 한 화면에
+     ========================================================= */
+  const OV = ['senate', 'house', 'governor'];
+  function withView(v, fn) { const keep = view; view = v; try { return fn(); } finally { view = keep; } }
+  function buildOverview() {
+    $('overview').innerHTML = OV.map(v => `
+      <section class="panel ov" data-ov="${v}">
+        <div class="panel-head"><h2>${{ senate: '상원', house: '하원', governor: '주지사' }[v]}<small>${{ senate: '35곳 · 과반 51석', house: '435석 · 과반 218석', governor: '36곳' }[v]}</small></h2>
+          <a class="ov-more" href="#${v}">자세히 ›</a></div>
+        <div class="ov-board" id="ovb-${v}"></div>
+        <div class="ov-map"><svg id="ovm-${v}" viewBox="0 0 975 610" role="img" aria-label="${v} 지도"></svg></div>
+      </section>`).join('');
+    OV.forEach(v => {
+      $('ovm-' + v).addEventListener('click', e => {
+        const el = e.target.closest('[data-st]');
+        if (!el) return;
+        if (v === 'house' && el.dataset.d) openDetail({ type: 'district', id: el.dataset.d });
+        else openDetail({ type: 'race', st: el.dataset.st, office: v });
+      });
+    });
+  }
+  function renderOverview() {
+    if (!$('ovb-senate')) buildOverview();
+    OV.forEach(v => withView(v, () => {
+      $('ovb-' + v).innerHTML = boardHTML(true);
+      paintMap($('ovm-' + v));
+    }));
+  }
+
   function render() {
     if (!data || !geo || !grid) return;
     mergedCache = {}; houseCache = null;
@@ -865,12 +894,18 @@
     n.hidden = !note;
     n.textContent = note;
     trackCalls();
-    renderBoard();
-    renderLegend();
-    paintMap();
-    renderSide();
+    const all = view === 'all';
+    $('overview').hidden = !all;
+    ['board', 'mainLayout', 'racesSec'].forEach(id => { $(id).hidden = all; });
+    if (all) renderOverview();
+    else {
+      renderBoard();
+      renderLegend();
+      paintMap();
+      renderSide();
+      renderGrid();
+    }
     renderTicker();
-    renderGrid();
     if (detailOpen) $('detailBody').innerHTML = detailHTML(detailOpen);
   }
 
@@ -879,7 +914,7 @@
      ========================================================= */
   function route() {
     const v = location.hash.slice(1);
-    view = ['senate', 'house', 'governor'].includes(v) ? v : 'senate';
+    view = ['all', 'senate', 'house', 'governor'].includes(v) ? v : 'all';
     if (filter === 'key' && view === 'house') filter = 'all';
     document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
     $('tip').hidden = true;
@@ -971,13 +1006,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041035').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041035').then(r => r.json()),
+    fetch('data/states.json?v=202611041057').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041057').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041035').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041057').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);

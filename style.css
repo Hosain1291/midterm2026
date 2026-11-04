@@ -299,3 +299,36 @@ body.noscroll{overflow:hidden}
 [data-theme=light] .ticker-move .tk-s.won{color:#b26b00}
 [data-theme=light] .top{border-bottom:1px solid var(--line)}
 
+
+/* 전체 보기 */
+.overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.overview[hidden],.layout[hidden],.races[hidden],.board[hidden]{display:none}
+.ov .panel-head h2 small{font-size:12px;font-weight:600;color:var(--ink3);margin-left:6px}
+.ov-more{font-size:12px;font-weight:800;color:var(--accent);text-decoration:none}
+.ov-board .board-row{grid-template-columns:1fr auto 1fr}
+.ov-board .tile{min-height:76px;padding:10px 12px;gap:8px}
+.ov-board .tile .big{font-size:50px}
+.ov-board .tile .who b{font-size:14px}
+.ov-board .tile .who span{font-size:11px}
+.ov-board .tile .chg{font-size:15px}
+.ov-board .mid{min-width:0;padding:6px 10px}
+.ov-board .mid .val{font-size:28px}
+.ov-board .mid .oth{font-size:11px}
+.ov-board .seatbar{padding:14px 12px 24px}
+.ov-board .bar{height:18px}
+.ov-board .bar-legend{display:none}
+.ov-board .headline{margin-top:6px;padding:8px 12px;font-size:13px}
+.ov-board .headline .tag{display:none}
+.ov-map{padding:6px 8px 10px}
+.ov-map svg{width:100%;height:auto;display:block}
+.ov-map svg .st{stroke:var(--map-line);stroke-width:1;transition:fill .5s;cursor:pointer}
+.ov-map svg .cell{transition:fill .5s;cursor:pointer;stroke:var(--panel);stroke-width:.8}
+.ov-map svg .hexborder{fill:none;stroke:var(--ink);stroke-width:1.8;pointer-events:none}
+.ov-map svg text{font-size:12px;font-weight:800;pointer-events:none;text-anchor:middle;dominant-baseline:central;font-family:var(--num)}
+.ov-map svg text.on,.ov-map svg text.hexlab{fill:#fff}
+.ov-map svg text.off{fill:var(--ink2)}
+.ov-map svg text.hexlab{stroke:rgba(0,0,0,.55);stroke-width:2.4;paint-order:stroke}
+.ov-map svg .box rect{stroke:var(--map-line);stroke-width:1;cursor:pointer}
+.ov-map svg .st:hover,.ov-map svg .cell:hover{stroke:var(--gold);stroke-width:2.5}
+@media (max-width:1100px){.overview{grid-template-columns:1fr 1fr}.ov[data-ov=house]{grid-column:1/-1}}
+@media (max-width:680px){.overview{grid-template-columns:1fr}.ov-board .tile .big{font-size:40px}}
