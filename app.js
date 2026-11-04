@@ -1,6 +1,6 @@
 /* 2026 미국 중간선거 개표 특보 */
 (() => {
-  const REFRESH_MS = 5000;   // 개표 피드 새로고침 간격 (5초)
+  const REFRESH_MS = 30000;   // 개표 피드 새로고침 간격 (30초)
   const SMALL = ['VT', 'NH', 'MA', 'RI', 'CT', 'NJ', 'DE', 'MD'];
   const PARTY = {
     D: { ko: '민주', c: 'var(--D)', l: 'var(--D2)' },
@@ -37,7 +37,7 @@
 
   /* =========================================================
      데이터: 기본 정보 + 실시간 피드
-     civicAPI 공개 피드 (브라우저에서 직접, 5초마다)
+     civicAPI 공개 피드 (브라우저에서 직접, 30초마다)
      ========================================================= */
   async function loadBase() {
     try {
@@ -89,6 +89,7 @@
     civ.house = out;
   }
   // 주지사 36곳: 먼저 검색 한 번으로 전부 받고(요청 1번), 빠진 주만 하나씩 받음
+  const detailAt = {};
   const isGovName = n => /governor/i.test(n || '') && !/lieut|primary|runoff/i.test(n || '');
   async function civicGovernors() {
     const list = data.governor.races;
@@ -110,7 +111,14 @@
       }
     } catch (e) {}
     // 검색 결과에 없거나 후보가 비어 있는 주는 개별 요청 (동시에 4개씩)
-    const rest = list.filter(r => !got.has(r.state) || !(out[r.state] && out[r.state].total > 0));
+    // 개별 요청은 최소한으로: 검색에 아예 없는 주만 바로, 검색엔 있는데 아직 0표인 주는 2분에 한 번만
+    const now = Date.now();
+    const rest = list.filter(r => {
+      if (!got.has(r.state)) return now - (detailAt[r.state] || 0) > 15000;
+      if (!(out[r.state] && out[r.state].total > 0)) return now - (detailAt[r.state] || 0) > 120000;
+      return false;
+    });
+    rest.forEach(r => { detailAt[r.state] = now; });
     let i = 0;
     async function worker() {
       while (i < rest.length) {
@@ -128,13 +136,13 @@
         } catch (e) {}
       }
     }
-    await Promise.all([1, 2, 3, 4].map(worker));
+    await Promise.all([1, 2].map(worker));
     civ.governor = out;
     live.govAt = Date.now();
   }
   async function loadCivic() {
     const jobs = [civicSenate(), civicHouse()];
-    // 어느 탭을 보든 상원·하원·주지사 전부 계속 받음 (주지사는 36곳이라 15초마다)
+    // 어느 탭을 보든 상원·하원·주지사 전부 30초마다 받음
     if (Date.now() - live.govAt > 15000) jobs.push(civicGovernors());
     const res = await Promise.allSettled(jobs);
     if (!res.some(x => x.status === 'fulfilled')) return false;
@@ -938,13 +946,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611041021').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611041021').then(r => r.json()),
+    fetch('data/states.json?v=202611041025').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611041025').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611041021').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611041025').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh().then(restoreView);
     setInterval(refresh, REFRESH_MS);
