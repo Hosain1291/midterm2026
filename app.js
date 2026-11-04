@@ -259,6 +259,15 @@
     }
     return { status: 'wait', party: null, L };
   }
+  // 하원 개표율: 전역구(주 전체가 한 선거구)는 피드의 하원 개표율이 틀리게 오는 경우가 있어
+  // 같은 주의 상원·주지사(주 전체) 개표율과 비교해 더 낮은 쪽을 씀
+  function distRep(id, L) {
+    const rep = +(L && L.reporting) || 0;
+    if (!id.endsWith('-AL')) return rep;
+    const st = id.split('-')[0];
+    const sw = [live.senate[st], live.governor[st]].filter(x => x && x.total > 0).map(x => +x.reporting || 0);
+    return sw.length ? Math.min(rep, ...sw) : rep;
+  }
   function houseTally() {
     if (houseCache) return houseCache;
     const by = {};
@@ -365,7 +374,7 @@
       if (s.L && s.L.cands) {
         const cs = s.L.cands.map(c => ({ ...c, name: hName(id, c.en, c.party) }));
         h += tipRows(cs, s.status === 'called' ? cs.findIndex(c => c.winner) : -1);
-        h += `<div class="ts">${s.status === 'called' ? '당선 확정' : s.status === 'counting' ? '개표 중' : '개표 전'}${s.L.reporting ? ` · 개표율 ${Math.round(s.L.reporting)}%` : ''}</div>`;
+        h += `<div class="ts">${s.status === 'called' ? '당선 확정' : s.status === 'counting' ? '개표 중' : '개표 전'}${distRep(id, s.L) ? ` · 개표율 ${Math.round(distRep(id, s.L))}%` : ''}</div>`;
       } else h += '<div class="ts">개표 전</div>';
     } else {
       const r = races().find(x => x.state === st);
@@ -573,7 +582,7 @@
     if (s.status === 'wait' || !s.L) return null;
     const cs = s.L.cands.map(c => ({ ...c, name: hName(id, c.en, c.party) }));
     const wi = s.status === 'called' ? cs.findIndex(c => c.winner) : -1;
-    const tail = wi >= 0 ? `<span class="tk-s won">${esc(cs[wi].name)} 당선</span>` : `<span class="tk-s">개표 ${Math.round(s.L.reporting || 0)}%</span>`;
+    const tail = wi >= 0 ? `<span class="tk-s won">${esc(cs[wi].name)} 당선</span>` : `<span class="tk-s">개표 ${Math.round(distRep(id, s.L))}%</span>`;
     return { tag: '하원', html: `<b class="tk-w">${distName(id)}</b>${candLine(cs, wi)}${tail}` };
   }
   // 개표 전 안내 문구
@@ -750,7 +759,7 @@
         <div class="cands">${candRows(cands, winIdx)}</div>
         <div class="dt-stats">
           <div><span>상태</span><b>${s.status === 'called' ? '당선 확정' : s.status === 'counting' ? '개표 중' : '개표 전'}</b></div>
-          <div><span>개표율</span><b>${L && L.reporting ? Math.round(L.reporting) + '%' : '–'}</b></div>
+          <div><span>개표율</span><b>${distRep(d.id, L) ? Math.round(distRep(d.id, L)) + '%' : '–'}</b></div>
           <div><span>격차</span><b>${m !== null ? m.toFixed(1) + '%p' : '–'}</b></div>
           <div><span>총 득표</span><b>${total ? total.toLocaleString('ko-KR') : '–'}</b></div>
         </div>
@@ -881,13 +890,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611040910').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611040910').then(r => r.json()),
+    fetch('data/states.json?v=202611040939').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611040939').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611040910').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611040939').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);
