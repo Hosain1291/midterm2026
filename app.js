@@ -1,6 +1,6 @@
 /* 2026 미국 중간선거 개표 특보 */
 (() => {
-  const REFRESH_MS = 60000;
+  const REFRESH_MS = 5000;   // 개표 피드 새로고침 간격 (5초)
   const SMALL = ['VT', 'NH', 'MA', 'RI', 'CT', 'NJ', 'DE', 'MD'];
   const PARTY = {
     D: { ko: '민주', c: 'var(--D)', l: 'var(--D2)' },
@@ -37,7 +37,7 @@
 
   /* =========================================================
      데이터: 기본 정보 + 실시간 피드
-     civicAPI 공개 피드 (브라우저에서 직접, 1분마다)
+     civicAPI 공개 피드 (브라우저에서 직접, 5초마다)
      ========================================================= */
   async function loadBase() {
     try {
@@ -115,19 +115,29 @@
   }
   async function loadCivic() {
     const jobs = [civicSenate(), civicHouse()];
-    if (view === 'governor' || Date.now() - live.govAt > 300000) jobs.push(civicGovernors());
+    if ((view === 'governor' && Date.now() - live.govAt > 15000) || Date.now() - live.govAt > 300000) jobs.push(civicGovernors());
     const res = await Promise.allSettled(jobs);
     if (!res.some(x => x.status === 'fulfilled')) return false;
     Object.assign(live, { src: 'civic', senate: civ.senate, governor: civ.governor, house: civ.house, test: civ.test, rehearsal: false, updated: civicUpdated, attribution: 'civicAPI', page: 'https://civicapi.org' });
     return true;
   }
 
+  let refreshing = false;
   async function refresh() {
-    if (!data) return;
+    if (!data || refreshing) return;
+    refreshing = true;
+    try { await doRefresh(); } finally { refreshing = false; }
+  }
+  let lastSig = '';
+  async function doRefresh() {
     let ok = false;
     try { ok = await loadCivic(); } catch (e) {}
     live.ok = ok;
     setStatus();
+    // 숫자가 그대로면 화면을 다시 그리지 않음 (5초마다 깜빡임 방지)
+    const sig = JSON.stringify([live.test, live.senate, live.governor, live.house, data.notice]);
+    if (sig === lastSig) return;
+    lastSig = sig;
     render();
   }
 
@@ -813,7 +823,7 @@
     $('tip').hidden = true;
     closeDetail();
     render();
-    if (view === 'governor' && data && Date.now() - live.govAt > 60000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
+    if (view === 'governor' && data && Date.now() - live.govAt > 15000) civicGovernors().then(() => { live.governor = civ.governor; render(); });
   }
   $('filters').addEventListener('click', e => {
     const b = e.target.closest('button');
@@ -871,13 +881,13 @@
   ['click', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, keepAwake, { passive: true }));
 
   Promise.all([
-    fetch('data/states.json?v=202611031936').then(r => r.json()),
-    fetch('data/house-grid.json?v=202611031936').then(r => r.json()),
+    fetch('data/states.json?v=202611040910').then(r => r.json()),
+    fetch('data/house-grid.json?v=202611040910').then(r => r.json()),
     loadBase(),
   ]).then(([g, hg]) => {
     geo = g; grid = hg;
     fetch('data/minor-names.json?v=' + Date.now()).then(r => r.json()).then(n => { mnames = n; render(); }).catch(() => {});
-    fetch('data/house-names.json?v=202611031936').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
+    fetch('data/house-names.json?v=202611040910').then(r => r.json()).then(n => { hnames = n; render(); }).catch(() => {});
     route();
     refresh();
     setInterval(refresh, REFRESH_MS);
